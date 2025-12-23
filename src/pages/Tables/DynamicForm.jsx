@@ -529,7 +529,7 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
             hint={internalErrors[field.name] || errors[field.name]  || field.hint}
             options={field.options || []} // Pass options via props
             loading={false} // You can pass loading state if needed
-            className={`${field.readOnly || isFieldDisabled(field)? "bg-gray-700 dark:bg-gray-600": "bg-transparent"
+            className={`${field.readOnly || isFieldDisabled(field)? "bg-gray-100 dark:bg-gray-500 rounded-lg ": "bg-transparent"
             } ${errors[field.name]? "border-red-600 focus:border-red-600": "border-slate-200"} sm:w-10 sm:gap-3 ${field.className}`}
             placeholder={field.label || ""}
           />

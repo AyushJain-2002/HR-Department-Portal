@@ -1047,9 +1047,9 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
 
 
   const handleNext = () => {
-    if (!validateCurrentStep()) {
-      return; // Stop if required fields aren't filled
-    }
+    // if (!validateCurrentStep()) {
+    //   return; // Stop if required fields aren't filled
+    // }
 
     const isLastStep = correctedActiveStep === filteredSteps.length - 1;
     if (isLastStep) {

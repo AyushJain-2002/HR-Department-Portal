@@ -120,20 +120,20 @@ const Select= ({
         onChange={handleChange}
         onBlur={handleBlur}
         classNamePrefix="react-select"
-        className={`text-sm md:w-auto dark:border-gray-700 dark:bg-gray-900 dark:focus:border-brand-800 dark:bg-dark-900 dark:bg-dark-900 dark:placeholder:text-white/30 dark:text-slate-100 dark:bg-dark-900 ${className}`}
+        className="text-sm  dark:border-gray-700 dark:bg-gray-900 dark:focus:border-brand-800 dark:bg-dark-900 dark:bg-dark-900 dark:placeholder:text-white/30 dark:text-slate-100 dark:bg-dark-900"
         styles={{
           control: (base, state) => ({
             ...base,
             minHeight: "44px",
             borderRadius: "0.6rem",
             borderColor: !state.isFocused
-              ? "#d1d5db"
+             ? "#d1d5db"
               : "#3b82f6",
             boxShadow: state.isFocused
               ? "0 0 0 1px rgba(59,130,246,0.1)"
               : "none",
             "&:hover": {
-              borderColor: "#3b82f6",
+              borderColor: "#3b82f6d",
             },
             backgroundColor: "transparent",
           }),
@@ -143,7 +143,7 @@ const Select= ({
           }),
           singleValue: (base) => ({
             ...base,
-            color: "#111827",
+            color: "gray",
           }),
           menu: (base) => ({
             ...base,
