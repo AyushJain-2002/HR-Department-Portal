@@ -1,0 +1,1489 @@
+// slices/authSlice.js
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { apiClient } from '../../api/apiClient';
+import {getDecryptedCookie, setEncryptedCookie} from "../../Utils/secureCookie"
+// import { resendEmailFailure } from './PospSignUpInSlice';
+import Logger from '../../api/Logger';
+import Cookies from "js-cookie"
+const initialState = {
+
+  isAuthenticated: false,
+  authToken: null,
+  user: null,
+  loading: false,
+  error: null,
+  success: false,
+  createSuccess: false,
+  questionSuccess: false,
+  posp: null,
+  training: null,
+  examQuestions: [],
+  allPosp: [],
+  loginError: null,
+  signupError: null,
+  createError: null,
+  submitresponse: null,
+  message: null,
+  resendMessage: null,
+  resendSuccess: false,
+  emailVerificationLoading: false,
+  emailVerificationError: null,
+  emailVerified: false,
+  passwordResetLoading: false,
+  passwordResetError: null,
+  passwordResetSuccess: false,
+  sendEmailSuccess: false,
+  sendEmailError: null,
+  sendEmailLoading: false,
+};
+// Helper function to get user info for logging
+const getUserInfoForLogging = () => {
+  try {
+    const userInfo = getDecryptedCookie("user");
+    return {
+      userId: userInfo?.id,
+      email: userInfo?.email,
+      name: userInfo?.name,
+      role: userInfo?.role
+    };
+  } catch {
+    return { userId: null, email: null , name: null, role: null };
+  }
+};
+
+
+// Helper function to handle API errors
+const handleApiError = (error, action) => {
+  let errorMessage = "Something went wrong";
+  
+  if (error.response?.data?.message) {
+    errorMessage = error.response.data.message;
+  } else if (error.response?.data?.errors?.email) {
+    errorMessage = error.response.data.errors.email[0];
+  } else if (error.message) {
+    errorMessage = error.message;
+  }
+    // Log error with user context
+  const userInfo = getUserInfoForLogging();
+  // Logger.error(`${action} failed`, {
+  //   error: errorMessage,
+  //   // userId: userInfo.userId,
+  //   email: userInfo.email,
+  //   fullError: error.response?.data || error.message,
+  // }, "API_ERROR");
+  
+  return errorMessage;
+}
+// Helper function to log user actions
+const logUserAction = (action, details = {}) => {
+  const userInfo = getUserInfoForLogging();
+  const logDetails = {
+    ...userInfo,
+    ...details,
+    page: window.location.pathname,
+    timestamp: new Date().toISOString()
+  };
+  // Logger.info(`User Action: ${action}`, logDetails, "USER_ACTION");
+};
+export const loginUser = createAsyncThunk(
+  "auth/loginUser",
+  async (data, { rejectWithValue }) => {
+    try {
+      // // Enhanced login attempt logging
+      // Logger.info("Login attempt", { 
+      //   email: data.email,
+      //   timestamp: new Date().toISOString(),
+      //   ipAddress: window.clientIP || 'unknown',
+      //   userAgent: navigator.userAgent?.substring(0, 100)
+      // }, "AUTH");
+      logUserAction("login_attempt", { email: data.email });
+
+      // console.log("data",data)
+      const res = await apiClient.auth.login(data);
+      // console.log("Response in authslice",res.data.token)
+      const token = res.data?.token;
+      const user = res.data?.user;
+      // console.log("authsliece",token,user)
+      if (token) {
+        await apiClient.setAuthData(token, user);
+        // Logger.info("Login successful", { 
+        //           userId: res.data.user?.id,
+        //           email: data.email,
+        //           timestamp: new Date().toISOString(),
+        //           userRole: res.data.user?.role,
+        //           loginTime: new Date().toLocaleString()
+        //         }, "AUTH");
+                
+                logUserAction("login_success", { 
+                  userId: user?.id
+                });
+      }
+
+      return res.data;
+    } catch (err) {
+      const errorMessage = handleApiError(err, "Login");
+      
+      // Log failed login attempt
+      logUserAction("login_failed", { 
+        email: data.email,
+        error: errorMessage
+      });
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Register User
+export const registerUser = createAsyncThunk(
+  "auth/registerUser",
+  async (userData, { rejectWithValue }) => {
+    try {
+      // // Log registration attempt
+      // Logger.info("Registration attempt", { 
+      //   email: userData.email,
+      //   name: userData.name,
+      //   timestamp: new Date().toISOString()
+      // }, "AUTH");
+      
+      logUserAction("registration_attempt", { 
+        email: userData.email,
+        name: userData.name 
+      });
+      
+      // const response = await apiClient.auth.post("/posp/register", userData);
+      const response = await apiClient.auth.register(userData);
+      // Enhanced registration logging
+      Logger.info("User registered successfully", { 
+        email: userData.email,
+        message: response.data.message,
+        registrationTime: new Date().toISOString(),
+        userId: response.data.user?.id
+      }, "AUTH");
+      
+      logUserAction("registration_success", { 
+        email: userData.email,
+        userId: response.data.user?.id
+      });
+      
+      return response.data;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Signup");
+      
+      // Log failed registration
+      logUserAction("registration_failed", { 
+        email: userData.email,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Resend Email Verification
+export const resendEmailVerification = createAsyncThunk(
+  "auth/resendEmailVerification",
+  async (token, { rejectWithValue }) => {
+    try {
+      let userInfo = getUserInfoForLogging();
+      let email = userInfo.email;
+      
+      // Log resend attempt
+      Logger.info("Resend email verification", { 
+        email,
+        timestamp: new Date().toISOString(),
+        userId: userInfo.id
+      }, "AUTH");
+      
+      logUserAction("resend_verification_email", { email });
+      
+      const response = await apiClient.auth.verifyEmail({ token });
+      
+      if (response.data.message) {
+        // Log successful resend
+        Logger.info("Email verification resent successfully", { 
+          email,
+          timestamp: new Date().toISOString()
+        }, "AUTH");
+        
+        logUserAction("verification_email_resent", { email });
+        
+        return { success: true, message: response.data.message };
+      }
+      
+      throw new Error("Unexpected response");
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Resend email");
+      
+      // Log failed resend
+      logUserAction("verification_email_resend_failed", { 
+        email: getUserInfoForLogging()?.email,
+        error: errorMessage
+      });
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+
+// ============================= NOT UPDATED other chained files BELOW THIS LINE =============================//
+
+
+// export const clearResendStatus = () => (dispatch) => {
+//   // dispatch(pospSignUpInSlice.actions.clearResendStatus());
+// };
+
+
+// Verify User Document
+export const verifyUserDocument = createAsyncThunk(
+  "auth/verifyUserDocument",
+  async ({ pospId, formDataObj }, { rejectWithValue }) => {
+    try {
+      const userInfo = getUserInfoForLogging();
+      
+      // Log document submission attempt
+      const documentTypes = Object.keys(formDataObj)
+        .filter(k => k.includes('document') || k.includes('file'))
+        .join(', ');
+        
+      Logger.info("Document verification submission", { 
+        pospId,
+        userId: userInfo.userId,
+        documentTypes,
+        timestamp: new Date().toISOString(),
+        fileCount: Object.keys(formDataObj).length
+      }, "DOCUMENT");
+      
+      logUserAction("document_submission", { 
+        pospId,
+        documentTypes,
+        fileCount: Object.keys(formDataObj).length
+      });
+      
+      const formData = new FormData();
+      Object.keys(formDataObj).forEach((key) => {
+        formData.append(key, formDataObj[key]);
+      });
+      formData.append("_method", "PUT");
+      
+      const response = await apiClient.auth.verifyDocuments(
+        `/posp/update/documents/${pospId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      
+      // Log successful document submission
+      Logger.info("Document verification submitted successfully", { 
+        pospId,
+        userId: userInfo.userId,
+        timestamp: new Date().toISOString(),
+        responseStatus: response.status
+      }, "DOCUMENT");
+      
+      logUserAction("document_submission_success", { pospId });
+      
+      return response.data;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Document verification");
+      
+      // Log failed document submission
+      logUserAction("document_submission_failed", { 
+        pospId: pospId,
+        error: errorMessage
+      });
+      
+      return rejectWithValue({
+        error: errorMessage,
+        createError: error.response?.data,
+      });
+    }
+  }
+);
+
+// Fetch POSP by ID
+export const fetchPospById = createAsyncThunk(
+  "auth/fetchPospById",
+  async (id, { rejectWithValue }) => {
+    try {
+      const userInfo = getUserInfoForLogging();
+      
+      // Log fetch attempt
+      Logger.info("Fetch POSP data", { 
+        pospId: id,
+        requestedBy: userInfo.userId,
+        timestamp: new Date().toISOString()
+      }, "DATA_ACCESS");
+      
+      logUserAction("fetch_posp_data", { pospId: id });
+      
+      const response = await apiClient.get(`/posp/getPospDataByID/${id}`);
+      
+      const mergedData = {
+        ...response.data.user,
+        ...response.data.images,
+      };
+      
+      // Log successful fetch
+      Logger.info("POSP data fetched successfully", { 
+        pospId: id,
+        userId: mergedData.id,
+        email: mergedData.email,
+        dataSize: JSON.stringify(mergedData).length
+      }, "DATA_ACCESS");
+      
+      logUserAction("posp_data_fetched", { pospId: id });
+      
+      return mergedData;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Fetch POSP by ID");
+      
+      // Log failed fetch
+      logUserAction("posb_data_fetch_failed", { 
+        pospId: id,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Fetch Training Seconds
+export const fetchTrainingSeconds = createAsyncThunk(
+  "auth/fetchTrainingSeconds",
+  async (_, { rejectWithValue }) => {
+    try {
+      const userInfo = getUserInfoForLogging();
+      
+      // Log training fetch
+      logUserAction("fetch_training_hours", { userId: userInfo.userId });
+      
+      const response = await apiClient.get(`/posp/get_training`);
+      
+      // Log successful training fetch
+      Logger.info("Training hours fetched", { 
+        userId: userInfo.userId,
+        seconds: response.data?.training_seconds,
+        timestamp: new Date().toISOString()
+      }, "TRAINING");
+      
+      logUserAction("training_hours_fetched", { 
+        userId: userInfo.userId,
+        seconds: response.data?.training_seconds
+      });
+      
+      return response.data;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Fetch training hours");
+      
+      // Log failed training fetch
+      logUserAction("training_hours_fetch_failed", { 
+        userId: getUserInfoForLogging().userId,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Update Training Seconds
+export const updateTrainingSeconds = createAsyncThunk(
+  "auth/updateTrainingSeconds",
+  async (trainingSeconds, { rejectWithValue }) => {
+    try {
+      const userInfo = getUserInfoForLogging();
+      
+      // Log training update attempt
+      Logger.info("Update training hours attempt", { 
+        userId: userInfo.userId,
+        newSeconds: trainingSeconds,
+        timestamp: new Date().toISOString()
+      }, "TRAINING");
+      
+      logUserAction("update_training_hours", { 
+        userId: userInfo.userId,
+        seconds: trainingSeconds
+      });
+      
+      const response = await apiClient.put(
+        `/posp/updateTrainingHours`,
+        { training_seconds: trainingSeconds }
+      );
+      
+      // Enhanced training update logging
+      Logger.info("Training hours updated successfully", { 
+        userId: userInfo.userId,
+        seconds: trainingSeconds,
+        timestamp: new Date().toISOString(),
+        responseStatus: response.status
+      }, "TRAINING");
+      
+      logUserAction("training_hours_updated", { 
+        userId: userInfo.userId,
+        seconds: trainingSeconds
+      });
+      
+      return response.data;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Update training hours");
+      
+      // Log failed training update
+      logUserAction("training_hours_update_failed", { 
+        userId: getUserInfoForLogging().userId,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Fetch Exam Questions
+export const fetchExamQuestions = createAsyncThunk(
+  "auth/fetchExamQuestions",
+  async (_, { rejectWithValue }) => {
+    try {
+      const userInfo = getUserInfoForLogging();
+      
+      // Log exam questions fetch
+      Logger.info("Fetch exam questions", { 
+        userId: userInfo.userId,
+        timestamp: new Date().toISOString()
+      }, "EXAM");
+      
+      logUserAction("fetch_exam_questions", { userId: userInfo.userId });
+      
+      const response = await apiClient.auth.get(endpoints.POSP.GET_EXAM_QUESTIONS);
+      
+      // Log successful exam fetch
+      Logger.info("Exam questions fetched successfully", { 
+        userId: userInfo.userId,
+        questionCount: response.data.questions?.length,
+        timestamp: new Date().toISOString()
+      }, "EXAM");
+      
+      logUserAction("exam_questions_fetched", { 
+        userId: userInfo.userId,
+        count: response.data.questions?.length
+      });
+      
+      // Store in session storage
+      sessionStorage.setItem(
+        "examQuestions",
+        JSON.stringify(response.data.questions)
+      );
+      
+      return response.data;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Fetch exam questions");
+      
+      // Log failed exam fetch
+      logUserAction("exam_questions_fetch_failed", { 
+        userId: getUserInfoForLogging().userId,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Submit Exam Responses
+export const submitExamResponses = createAsyncThunk(
+  "auth/submitExamResponses",
+  async (examData, { rejectWithValue }) => {
+    try {
+      const userId = examData.user_id || 'unknown';
+      
+      // Log exam submission attempt
+      Logger.info("Exam submission attempt", { 
+        userId,
+        questionCount: examData.responses?.length,
+        timestamp: new Date().toISOString(),
+        examType: examData.exam_type || 'unknown'
+      }, "EXAM");
+      
+      logUserAction("exam_submission", { 
+        userId,
+        questionCount: examData.responses?.length
+      });
+      
+      const response = await apiClient.post(
+        endpoints.POSP.SUBMIT_EXAM,
+        examData,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+        }
+      );
+      
+      // Log successful exam submission
+      Logger.info("Exam submitted successfully", { 
+        userId,
+        questionCount: examData.responses?.length,
+        timestamp: new Date().toISOString(),
+        score: response.data.score,
+        result: response.data.result,
+        submissionId: response.data.submission_id
+      }, "EXAM");
+      
+      logUserAction("exam_submission_success", { 
+        userId,
+        score: response.data.score,
+        result: response.data.result
+      });
+      
+      // Clear session storage
+      sessionStorage.removeItem("examQuestions");
+      sessionStorage.removeItem("examStartTime");
+      sessionStorage.removeItem("examResponses");
+      
+      return response.data;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Submit exam");
+      
+      // Log failed exam submission
+      logUserAction("exam_submission_failed", { 
+        userId: examData.user_id || 'unknown',
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Fetch All POSP Data
+export const fetchAllPospData = createAsyncThunk(
+  "auth/fetchAllPospData",
+  async (_, { rejectWithValue }) => {
+    try {
+      const userInfo = getUserInfoForLogging();
+      
+      // Log all POSP data fetch
+      Logger.info("Fetch all POSP data", { 
+        requestedBy: userInfo.userId,
+        timestamp: new Date().toISOString(),
+        userRole: userInfo.role
+      }, "DATA_ACCESS");
+      
+      logUserAction("fetch_all_posp_data", { userId: userInfo.userId });
+      
+      const response = await apiClient.get(ENDPOINTS.POSP.GET_ALL_POSP);
+      
+      const mergedData = response.data.map((item) => ({
+        ...item.user,
+        ...item.images,
+        posp_reporting_manager: item.user.posp_reporting_manager,
+      }));
+      
+      // Log successful data fetch
+      Logger.info("All POSP data fetched successfully", { 
+        requestedBy: userInfo.userId,
+        recordCount: mergedData.length,
+        timestamp: new Date().toISOString(),
+        dataSize: JSON.stringify(mergedData).length
+      }, "DATA_ACCESS");
+      
+      logUserAction("all_posp_data_fetched", { 
+        userId: userInfo.userId,
+        count: mergedData.length
+      });
+      
+      return mergedData;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Fetch all POSP data");
+      
+      // Log failed data fetch
+      logUserAction("all_posp_data_fetch_failed", { 
+        userId: getUserInfoForLogging().userId,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+
+// Update Documents Action (HR)
+export const updateDocumentsAction = createAsyncThunk(
+  "posp/updateDocumentsAction",
+  async ({ id, formData }, { rejectWithValue }) => {
+    try {
+      const userInfo = getUserInfoForLogging();
+      
+      // Log documents update
+      logger.info("Update documents (HR action)", { 
+        pospId: id,
+        updatedBy: userInfo.userId,
+        timestamp: new Date().toISOString(),
+        userRole: userInfo.role
+      }, "HR_ACTION");
+      
+      logUserAction("hr_update_documents", { 
+        pospId: id,
+        userId: userInfo.userId
+      });
+      
+      const response = await apiClient.put(
+        `${endpoints.POSP.HR_UPDATE_DOCUMENTS}/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      
+      // Log successful documents update
+      logger.info("Documents updated successfully (HR)", { 
+        pospId: id,
+        updatedBy: userInfo.userId,
+        timestamp: new Date().toISOString(),
+        responseStatus: response.status
+      }, "HR_ACTION");
+      
+      logUserAction("hr_documents_update_success", { pospId: id });
+      
+      return response.data;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Update documents");
+      
+      // Log failed documents update
+      logUserAction("hr_documents_update_failed", { 
+        pospId: id,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Verify Email (Forgot Password)
+export const verifyEmail = createAsyncThunk(
+  "posp/verifyEmail",
+  async (email, { rejectWithValue }) => {
+    try {
+      // Log password reset request
+      logger.info("Password reset requested", { 
+        email,
+        timestamp: new Date().toISOString(),
+        ipAddress: window.clientIP || 'unknown'
+      }, "AUTH");
+      
+      logUserAction("password_reset_request", { email });
+      
+      const response = await apiClient.post(endpoints.AUTH.FORGOT_PASSWORD, { email });
+      
+      // Log OTP sent
+      logger.info("OTP sent for password reset", { 
+        email,
+        timestamp: new Date().toISOString(),
+        deliveryStatus: "sent"
+      }, "AUTH");
+      
+      logUserAction("otp_sent", { email });
+      
+      if (response.data.message === "OTP sent successfully to your email.") {
+        return { success: true, message: response.data.message };
+      }
+      
+      throw new Error("Unexpected response from the server.");
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Verify email");
+      
+      // Log failed password reset request
+      logUserAction("password_reset_request_failed", { 
+        email,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Reset Password
+export const resetPassword = createAsyncThunk(
+  "posp/resetPassword",
+  async ({ email, otp, password, password_confirmation }, { rejectWithValue }) => {
+    try {
+      // Log password reset attempt
+      logger.info("Password reset attempt", { 
+        email,
+        timestamp: new Date().toISOString(),
+        otpLength: otp?.toString().length || 0
+      }, "AUTH");
+      
+      logUserAction("password_reset_attempt", { email });
+      
+      const response = await apiClient.post(endpoints.AUTH.RESET_PASSWORD, {
+        email,
+        otp: parseInt(otp, 10),
+        password,
+        password_confirmation,
+      });
+      
+      // Log successful password reset
+      logger.info("Password reset successful", { 
+        email,
+        timestamp: new Date().toISOString(),
+        resetTime: new Date().toLocaleString()
+      }, "AUTH");
+      
+      logUserAction("password_reset_success", { email });
+      
+      return response.data;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Reset password");
+      
+      // Log failed password reset
+      logUserAction("password_reset_failed", { 
+        email,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Toggle POSP Status
+export const togglePospStatus = createAsyncThunk(
+  "posp/togglePospStatus",
+  async (pospId, { rejectWithValue }) => {
+    try {
+      const userInfo = getUserInfoForLogging();
+      
+      // Log status toggle attempt
+      logger.info("Toggle POSP status attempt", { 
+        pospId,
+        updatedBy: userInfo.userId,
+        timestamp: new Date().toISOString(),
+        userRole: userInfo.role
+      }, "HR_ACTION");
+      
+      logUserAction("toggle_posp_status", { 
+        pospId,
+        userId: userInfo.userId
+      });
+      
+      const response = await apiClient.put(
+        `${endpoints.POSP.TOGGLE_ACTIVE}/${pospId}`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      // Log status toggle success
+      logger.info("POSP status toggled successfully", { 
+        pospId, 
+        active: response.data.active,
+        updatedBy: userInfo.userId,
+        timestamp: new Date().toISOString()
+      }, "HR_ACTION");
+      
+      logUserAction("posp_status_toggled", { 
+        pospId, 
+        active: response.data.active
+      });
+      
+      if (response.data.message) {
+        return {
+          active: response.data.active,
+          pospId,
+        };
+      } else {
+        throw new Error("Invalid API response");
+      }
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Toggle POSP status");
+      
+      // Log failed status toggle
+      logUserAction("toggle_posp_status_failed", { 
+        pospId,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Send Email to POSP
+export const sendEmailToPosp = createAsyncThunk(
+  "posp/sendEmailToPosp",
+  async (emailData, { rejectWithValue }) => {
+    try {
+      const userInfo = getUserInfoForLogging();
+      
+      // Log email sending attempt
+      logger.info("Send email to POSP attempt", { 
+        to: emailData.email,
+        subject: emailData.subject,
+        sentBy: userInfo.userId,
+        timestamp: new Date().toISOString(),
+        userRole: userInfo.role
+      }, "HR_ACTION");
+      
+      logUserAction("send_email_to_posp", { 
+        to: emailData.email,
+        subject: emailData.subject
+      });
+      
+      const response = await apiClient.post(
+        endpoints.POSP.SEND_EMAIL,
+        emailData,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      
+      // Log email sent success
+      logger.info("Email sent to POSP successfully", { 
+        to: emailData.email,
+        subject: emailData.subject,
+        sentBy: userInfo.userId,
+        timestamp: new Date().toISOString(),
+        responseStatus: response.status
+      }, "HR_ACTION");
+      
+      logUserAction("email_sent_to_posp", { 
+        to: emailData.email,
+        subject: emailData.subject
+      });
+      
+      return response.data;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Send email to POSP");
+      
+      // Log failed email sending
+      logUserAction("send_email_to_posp_failed", { 
+        to: emailData.email,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Toggle Documents Verification
+export const toggleDocumentsVerification = createAsyncThunk(
+  "posp/toggleDocumentsVerification",
+  async (id, { rejectWithValue }) => {
+    try {
+      const userInfo = getUserInfoForLogging();
+      
+      // Log document verification toggle
+      logUserAction("toggle_documents_verification", { 
+        pospId: id,
+        userId: userInfo.userId
+      });
+      
+      const response = await apiClient.put(
+        `${endpoints.POSP.TOGGLE_DOCS_VERIFICATION}/${id}`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      // Log document verification toggle success
+      logUserAction("documents_verification_toggled", { 
+        pospId: id,
+        status: response.data.status
+      });
+      
+      return response.data;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Toggle documents verification");
+      
+      // Log failed document verification toggle
+      logUserAction("toggle_documents_verification_failed", { 
+        pospId: id,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Toggle Can Update Documents
+export const toggleCanUpdateDocuments = createAsyncThunk(
+  "posp/toggleCanUpdateDocuments",
+  async (id, { rejectWithValue }) => {
+    try {
+      const userInfo = getUserInfoForLogging();
+      
+      // Log update documents permission toggle
+      logUserAction("toggle_update_documents_permission", { 
+        pospId: id,
+        userId: userInfo.userId
+      });
+      
+      const response = await apiClient.put(
+        `${endpoints.POSP.TOGGLE_UPDATE_DOCS}/${id}`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      // Log permission toggle success
+      logUserAction("update_documents_permission_toggled", { 
+        pospId: id,
+        status: response.data.status
+      });
+      
+      return response.data;
+    } catch (error) {
+      const errorMessage = handleApiError(error, "Toggle update documents");
+      
+      // Log failed permission toggle
+      logUserAction("toggle_update_documents_permission_failed", { 
+        pospId: id,
+        error: errorMessage
+      });
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+export const verifyToken = createAsyncThunk(
+  "auth/verifyToken",
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = await apiClient.auth.verifyToken(data);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err?.message || "Token invalid");
+    }
+  }
+);
+
+// /* =====================================================
+//    ⭐ verifyEmail → Since you asked for verifyEmail, not verifyToken
+//    aligns with AuthService.verifyToken()
+//    =====================================================*/
+// export const verifyEmail = createAsyncThunk(
+//   "auth/verifyEmail",
+//   async (data, { rejectWithValue }) => {
+//     try {
+//       // ⭐ calling AuthService.verifyToken()
+//       const res = await apiClient.auth.verifyToken(data);
+
+//       return res.data;
+//     } catch (err) {
+//       return rejectWithValue(err?.message || "Verification failed");
+//     }
+//   }
+// );
+
+
+// export const logout = createAsyncThunk("auth/logout", async () => {
+//   await apiClient.clearAuth();
+//   // return null;
+// });
+
+const authSlice = createSlice({
+  name: "auth",
+  initialState,
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+    setUser: (state, action) => {
+      state.user = action.payload;
+      // Update registration status based on user data
+    },
+
+    // ============================NEW================================
+    clearResendStatus: (state) => {
+      state.resendSuccess = false;
+      state.resendMessage = null;
+      state.error = null;
+    },
+    resetSignupSuccess: (state) => {
+      state.success = false;
+      state.message = null;
+    },
+    resetPosp: (state) => {
+      state.error = null;
+      state.createError = null;
+      state.createSuccess = false;
+      state.questionSuccess = false;
+    },
+    resetUpdateSuccess: (state) => {
+      state.success = false;
+    },
+    logout: (state) => {
+      state.user = null;
+      state.posp = null;
+      state.authToken = null;
+      state.error = null;
+      state.success = false;
+      Cookies.remove("authToken");
+      Cookies.remove("userId");
+      Cookies.remove("emailId");
+      Cookies.remove("LoginEmailId");
+      Cookies.remove("PersonalEmailId");
+      Cookies.remove("branchId");
+      Cookies.remove("user");
+      localStorage.removeItem("examStartTime");
+      localStorage.removeItem("elapsedTime");
+    },
+    sendEmailReset: (state) => {
+      state.sendEmailError = null;
+      state.sendEmailSuccess = false;
+    },
+  },
+
+  extraReducers: (builder) => {
+    builder
+      // 🔹 Login
+      .addCase(loginUser.pending, (state) => {
+         state.loading = true;
+        state.error = null;
+        state.loginError = null;
+        state.success = false;
+        state.createSuccess = false;
+        state.createError = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+         state.loading = false;
+        state.loginError = null;
+        state.success = true;
+        const token = action.payload?.token;
+        const user = action.payload?.user;
+        // console.log("fulfilled",token,user)
+        if (token) {
+          state.isAuthenticated = true;
+          state.authToken = token;
+          state.user = user;
+        }
+        setEncryptedCookie("user", {
+          id: action.payload.user?.id,
+          email: action.payload.user?.email,
+          branch_id: action.payload.user?.branch_id,
+          login_email: action.payload.user?.login_email,
+          personal_email: action.payload.user?.personal_email,
+          email_verification: action.payload.email_verification,
+          documents_verification: action.payload.documents_verification,
+          training_seconds: action.payload.training_seconds,
+          can_exam: action.payload.can_exam,
+          exam: action.payload.exam,
+          role: action.payload.user?.role,
+        });
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+       state.loginError = action.payload;
+        state.user = null;
+        state.token = null;
+        Cookies.remove("authToken");
+        Cookies.remove("userId");
+        Cookies.remove("emailId");
+        Cookies.remove("LoginEmailId");
+        Cookies.remove("PersonalEmailId");
+        Cookies.remove("branchId");
+        localStorage.removeItem("examStartTime");
+        localStorage.removeItem("elapsedTime");
+        
+      })
+
+      // 🔹 Verify Token
+      .addCase(verifyToken.fulfilled, (state, action) => {
+        if (action.payload?.success) {
+          state.isAuthenticated = true;
+        }
+      })
+
+      // // 🔹 Logout
+      // .addCase(logout.fulfilled, (state) => {
+      //   state.isAuthenticated = false;
+      //   state.authToken = null;
+      //   state.user = null;
+      // });
+      // 🔹 Register User
+    builder
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.signupError = null;
+        state.success = false;
+        state.resendSuccess = false;
+        state.message = null;
+        state.posp = null;
+        state.resendMessage = null;
+        state.createError = null;
+        state.createSuccess = false;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message = action.payload.message;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.signupError = null;
+        state.success = true;
+        state.createSuccess = false;
+        Cookies.set("authToken", action.payload.token, {
+          expires: 240 / 1440,
+          secure: false,
+          sameSite: "Strict",
+        });
+        setEncryptedCookie("user", {
+          id: action.payload.user.id,
+          email: action.payload.user.email,
+          branch_id: action.payload.user.branch_id,
+          login_email: action.payload.user.login_email,
+          personal_email: action.payload.personal_email,
+          role: action.payload.user.role,
+        });
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.signupError = action.payload;
+        state.user = null;
+        state.token = null;
+      });
+
+    // 🔹 Resend Email Verification
+    builder
+      .addCase(resendEmailVerification.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.signupError = null;
+        state.success = false;
+        state.resendSuccess = false;
+        state.message = null;
+        state.posp = null;
+        state.resendMessage = null;
+        state.createError = null;
+        state.createSuccess = false;
+      })
+      .addCase(resendEmailVerification.fulfilled, (state, action) => {
+        state.resendMessage = action.payload.message;
+        state.error = null;
+        state.loading = false;
+        state.resendSuccess = true;
+        state.createSuccess = false;
+        state.token = getTokenFromCookies();
+      })
+      .addCase(resendEmailVerification.rejected, (state, action) => {
+        state.error = action.payload;
+        state.resendMessage = null;
+        state.resendSuccess = false;
+        state.token = getTokenFromCookies();
+      });
+
+    // 🔹 Verify User Document
+    builder
+      .addCase(verifyUserDocument.pending, (state) => {
+        state.loading = true;
+        state.message = null;
+        state.error = null;
+        state.createError = null;
+        state.createSuccess = false;
+      })
+      .addCase(verifyUserDocument.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message = action.payload.message;
+        state.user = action.payload.user;
+        state.token = getTokenFromCookies();
+        state.createSuccess = true;
+        state.error = null;
+        state.createError = null;
+      })
+      .addCase(verifyUserDocument.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.error;
+        state.createError = action.payload?.createError;
+      });
+
+    // 🔹 Fetch POSP by ID
+    builder
+      .addCase(fetchPospById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.signupError = null;
+        state.success = false;
+        state.resendSuccess = false;
+        state.message = null;
+        state.posp = null;
+        state.resendMessage = null;
+        state.createError = null;
+        state.createSuccess = false;
+      })
+      .addCase(fetchPospById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.posp = action.payload;
+        state.token = getTokenFromCookies();
+        state.signupError = null;
+        state.success = true;
+        state.createSuccess = false;
+        state.createError = null;
+      })
+      .addCase(fetchPospById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // 🔹 Fetch Training Seconds
+    builder
+      .addCase(fetchTrainingSeconds.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTrainingSeconds.fulfilled, (state, action) => {
+        state.loading = false;
+        state.training = action.payload;
+      })
+      .addCase(fetchTrainingSeconds.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // 🔹 Update Training Seconds
+    builder
+      .addCase(updateTrainingSeconds.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(updateTrainingSeconds.fulfilled, (state, action) => {
+        state.loading = false;
+        state.training = action.payload;
+        state.success = true;
+      })
+      .addCase(updateTrainingSeconds.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      });
+
+    // 🔹 Fetch Exam Questions
+    builder
+      .addCase(fetchExamQuestions.pending, (state) => {
+        state.loading = true;
+        state.success = false;
+        state.error = null;
+        state.examQuestions = [];
+      })
+      .addCase(fetchExamQuestions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = false;
+        state.examQuestions = action.payload.questions;
+        state.message = action.payload.message;
+      })
+      .addCase(fetchExamQuestions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.examQuestions = [];
+      });
+
+    // 🔹 Submit Exam Responses
+    builder
+      .addCase(submitExamResponses.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+        state.questionSuccess = false;
+        state.submitresponse = null;
+      })
+      .addCase(submitExamResponses.fulfilled, (state, action) => {
+        state.loading = false;
+        state.questionSuccess = true;
+        state.submitresponse = action.payload;
+        localStorage.removeItem("examStartTime");
+      })
+      .addCase(submitExamResponses.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.questionSuccess = false;
+        state.success = false;
+        state.submitresponse = null;
+      });
+
+    // 🔹 Fetch All POSP Data
+    builder
+      .addCase(fetchAllPospData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.signupError = null;
+        state.success = false;
+        state.resendSuccess = false;
+        state.message = null;
+        state.posp = null;
+        state.resendMessage = null;
+        state.createError = null;
+        state.createSuccess = false;
+      })
+      .addCase(fetchAllPospData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allPosp = action.payload;
+        state.token = getTokenFromCookies();
+        state.signupError = null;
+        state.success = true;
+        state.createSuccess = false;
+        state.createError = null;
+      })
+      .addCase(fetchAllPospData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // 🔹 Update Documents Action (HR)
+    builder
+      .addCase(updateDocumentsAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.createError = null;
+        state.editSuccess = false;
+        state.success = false;
+        state.editError = null;
+      })
+      .addCase(updateDocumentsAction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.editSuccess = true;
+        state.allPosp = state.allPosp.map((posp) =>
+          posp.id === action.payload.id ? action.payload : posp
+        );
+        state.formData = action.payload;
+        state.success = true;
+        state.error = null;
+        state.createError = null;
+      })
+      .addCase(updateDocumentsAction.rejected, (state, action) => {
+        state.loading = false;
+        state.editError = action.payload;
+        state.success = false;
+      });
+
+    // 🔹 Verify Email (Forgot Password)
+    builder
+      .addCase(verifyEmail.pending, (state) => {
+        state.emailVerificationLoading = true;
+        state.emailVerificationError = null;
+        state.emailVerified = false;
+      })
+      .addCase(verifyEmail.fulfilled, (state) => {
+        state.emailVerificationLoading = false;
+        state.emailVerified = true;
+      })
+      .addCase(verifyEmail.rejected, (state, action) => {
+        state.emailVerificationLoading = false;
+        state.emailVerificationError = action.payload;
+        state.emailVerified = false;
+      });
+
+    // 🔹 Reset Password
+    builder
+      .addCase(resetPassword.pending, (state) => {
+        state.passwordResetLoading = true;
+        state.passwordResetError = null;
+        state.passwordResetSuccess = false;
+      })
+      .addCase(resetPassword.fulfilled, (state) => {
+        state.passwordResetLoading = false;
+        state.passwordResetSuccess = true;
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.passwordResetLoading = false;
+        state.passwordResetError = action.payload;
+        state.passwordResetSuccess = false;
+      });
+
+    // 🔹 Toggle POSP Status
+    builder
+      .addCase(togglePospStatus.pending, (state) => {
+        state.toggleLoading = true;
+        state.error = null;
+      })
+      .addCase(togglePospStatus.fulfilled, (state, action) => {
+        const toggledPospId = action.payload.pospId;
+        state.toggleLoading = false;
+        if (toggledPospId) {
+          state.allPosp = state.allPosp.map((posp) =>
+            posp.id === toggledPospId
+              ? { ...posp, active: !posp.active }
+              : posp
+          );
+        }
+      })
+      .addCase(togglePospStatus.rejected, (state, action) => {
+        state.toggleLoading = false;
+        state.error = action.payload;
+      });
+
+    // 🔹 Send Email to POSP
+    builder
+      .addCase(sendEmailToPosp.pending, (state) => {
+        state.sendEmailError = null;
+        state.sendEmailSuccess = false;
+      })
+      .addCase(sendEmailToPosp.fulfilled, (state) => {
+        state.sendEmailSuccess = true;
+      })
+      .addCase(sendEmailToPosp.rejected, (state, action) => {
+        state.sendEmailError = action.payload;
+      });
+
+    // 🔹 Toggle Documents Verification
+    builder
+      .addCase(toggleDocumentsVerification.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(toggleDocumentsVerification.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.message = action.payload.message;
+        state.error = null;
+      })
+      .addCase(toggleDocumentsVerification.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      });
+
+    // 🔹 Toggle Can Update Documents
+    builder
+      .addCase(toggleCanUpdateDocuments.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(toggleCanUpdateDocuments.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.message = action.payload.message;
+        state.error = null;
+      })
+      .addCase(toggleCanUpdateDocuments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      });
+  },
+});
+
+export const { clearError , setUser,clearResendStatus,resetSignupSuccess,resetPosp,resetUpdateSuccess,logout,sendEmailReset } = authSlice.actions;
+export default authSlice.reducer;
