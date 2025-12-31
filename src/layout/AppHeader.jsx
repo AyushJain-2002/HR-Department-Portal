@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
-import NotificationDropdown from "../components/Header/NotificationDropdown";
-import UserDropdown from "../components/Header/UserDropdown";
+import NotificationDropdown from "../components/header/NotificationDropdown";
+import UserDropdown from "../components/header/UserDropdown";
 import { useNavigate } from "react-router-dom"; // <-- import this
 
 
