@@ -1,7 +1,7 @@
 
 import { getDecryptedCookie } from "../../Utils/secureCookie";
 import { useAuth } from "../../hooks/useAuth";
-import DashboardHR from "./DashBoardHR";
+import DashboardHR from "./DashboardHR";
 
 const DashboardSelector = () => {
   const {authState} = useAuth();
