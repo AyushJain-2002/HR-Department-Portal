@@ -1,54 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { Stepper, Step, Typography, Tooltip, step } from "@material-tailwind/react";
-// import SearchableSelect from "../Pages/TableActions/SearchableSelect";
-// import Select from "react-select";
-import CreatableSelect from "react-select/creatable";
-// import DatePicker from "react-datepicker";
 import DatePicker from "../../components/form/date-picker";
 import "react-date-picker/dist/DatePicker.css";
 import "react-calendar/dist/Calendar.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { format } from "date-fns";
-// import SelectInputs from "../form/form-elements/SelectInputs";
-// import {
-//   fetchCitiesByState,
-//   fetchCitiesByStateAnother,
-// } from "../../store/Actions/StateAction";
-import { useDispatch, useSelector } from "react-redux";
 import { RxCross1 } from "react-icons/rx";
 import { IoCheckmark } from "react-icons/io5";
-// import { TiTick } from "react-icons/ti";
-// import { IoMdCheckmark } from "react-icons/io";
 import { useLocation } from "react-router-dom";
-// import {
-//   fetchPosp,
-//   fetchRelationshipManager,
-//   fetchReportingManager,
-//   fetchReportingManagerWithPosp,
-// } from "../../store/Actions/OperationAction";
 import DialogBox from "../common/DialogBox"
 import Radio from "../form/input/Radio";
 import Input from "../form/input/InputField";
-import { CalenderIcon, EnvelopeIcon } from "../../icons";
+import {  EnvelopeIcon } from "../../icons";
 import { PhoneIcon } from "@heroicons/react/24/outline";
 import Select from "../form/Select";
 import FileInput from "../form/input/FileInput";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../../components/ui/button/Button"
-import { useOperation } from "../../hooks/useOperation";
-import {useStateData} from "../../hooks/useStatesData"
+import {useStateData,useOperation} from "../../hooks/hookIndex"
 
 export default function FormComponent({
   config,
   resetValue,
   onSubmit,
-  onReset,
-  onChange,
-  isEditMode = false,
   errors = {},
   success,
   initialValues = {},
-  otherHead,
 }) {
   const [formData, setFormData] = useState({});
   const [internalErrors, setInternalErrors] = useState({});
@@ -62,13 +39,7 @@ export default function FormComponent({
   
   const { fetchPosp,fetchRelationshipManager,fetchReportingManager,fetchReportingManagerWithPosp } = useOperation()
   const {cities,citiesBy,fetchCitiesByState,fetchCitiesByStateAnother} =useStateData(); 
-  // const[dialog,setDialog]=useState(true);
-// console.log("fields:", stepFields);
-//  const {
-//     // states = [],
-//     // cities = { cities: [] },
-//     citiesBy = { cities: [] }
-//   } = useSelector((state) => state.states);
+
   useEffect(() => {
     const isEditPage = ![
       "/master/hr/create-employee",
@@ -94,20 +65,6 @@ export default function FormComponent({
       setIsInitialized(false); // 🟡 Important: allow reinitialization if switching back to edit
     }
   }, [location.pathname, resetValue]);
-  // Runs when `initialValues` updates
-
-
-  // useEffect(() => {
-  //   if (success) {
-  //     const newFormData = [...stepFields].reduce((acc, field) => {
-  //       acc[field.name] =
-  //         field.name === "branch_id" ? formData[field.name] : ""; // Reset each field to empty
-  //       return acc;
-  //     }, {});
-  //     setFormData(newFormData);
-  //     setResetFlag(false); // Reset the flag after reset
-  //     }
-  // }, [success, stepFields, formData]);  //  
    useEffect(() => {
     if (success) {
       const newFormData = [...stepFields].reduce((acc, field) => {
@@ -120,11 +77,7 @@ export default function FormComponent({
       }
   }, [success]);
   const handleChange = (selectedOption, actionMeta) => {
-    // console.log("selectedOption with action meta",selectedOption,actionMeta)
     const name = actionMeta?.name;
-    // console.log("selectedopt",selectedOption)
-    // validateField(name,selectedOption.value,actionMeta)
-    // console.log(internalErrors) ;
     const value =selectedOption?.value || "";
 
     // console.log(`value ${value} on name ${name}`)
@@ -133,20 +86,16 @@ export default function FormComponent({
 
       if (name === "current_address_state") {
         updatedFormData.current_address_city = "";
-        // updatedFormData[name] = selectedOption?.label; // Set state name as label
         (fetchCitiesByState(value));
       } else if (name === "permanent_address_state") {
         updatedFormData.permanent_address_city = "";
-        // updatedFormData[name] = selectedOption?.label; // Set state name as label
         (fetchCitiesByStateAnother(value));
       } else if (name === "state") {
         updatedFormData.city = "";
-        // updatedFormData[name] = selectedOption?.label; // Set state name as label
         (fetchCitiesByState(value));
       } else if (name === "bqp") {
         updatedFormData.relationship_manager = "";
         updatedFormData.reporting_manager = "";
-        // updatedFormData[name] = selectedOption?.value; // Set state name as label
         (fetchReportingManager(value));
         (fetchRelationshipManager(value));
         (fetchReportingManagerWithPosp(value));
@@ -154,12 +103,9 @@ export default function FormComponent({
       else if (name === "reporting_manager") {
         updatedFormData.relationship_manager = "";
         updatedFormData[name] = selectedOption.value; // Set state name as label
-        // dispatch(fetchRelationshipManager(value));
       }
       else if (name === "relationship_manager") {
-        // updatedFormData.posp_id = "";
         updatedFormData[name] = selectedOption?.value; // Set state name as label
-        // (fetchPosp(value));
       } else if (
         name === "title" ||
         name === "role" ||
@@ -177,44 +123,19 @@ export default function FormComponent({
         name === "language" ||
         name === "branch_id"
       ) {
-        // if(name === "branch_id")
           updatedFormData[name]=selectedOption?.value;
-        // else
-        // updatedFormData[name] = selectedOption?.label; // ✅ Set title as label
       }
-      // console.log(`updated form data ${updatedFormData[name]}`)
       return updatedFormData;
     });
   };
-  // useEffect(() => {
-  //   if (formData.bqp) {
-  //     (fetchReportingManager(formData.bqp));
-  //     (fetchRelationshipManager(formData.bqp));
-  //   }
-  // }, [formData.bqp]);
- 
-  // useEffect(() => {
-  //   if (formData.reporting_manager) {
-  //     (fetchRelationshipManager(formData.reporting_manager));
-  //   }
-  // }, [formData.reporting_manager, dispatch]);
-  // useEffect(() => {
-  //   if (formData.relationship_manager) {
-  //     (fetchPosp(formData.relationship_manager));
-  //   }
-  // }, [formData.relationship_manager]);
 
   const [visitedSteps, setVisitedSteps] = useState(new Set([0]));
-  // console.log(formData)
   const handleTextInputChange = (name, value) => {
+    console.log("file name",value)
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    // console.log(value);
-    // if (onChange) {
-    //   onChange(name, value);
-    // }
   };
   const handleTextInput = (event) => {
     const { name, value } = event.target;
@@ -274,16 +195,11 @@ export default function FormComponent({
 
   const handleSubmit = async () => {
     try {
-      // console.log("formData:", formData);
-
       onSubmit(formData);
-      // setResetFlag(true);
     } catch (error) {
       console.log(error);
-      // alert("Failed to submit the form. Please try again.");
     }
   };
-
   useEffect(() => {
     setIsLastStep(activeStep === stepFields.length - 1);
     setIsFirstStep(activeStep === 0);
@@ -355,66 +271,10 @@ const handleRadioChange = (e) => {
         };
       }
     }
-
     return updated;
   });
 };
-  // const handleRadioChange = (e) => {         //original
-  
-  //   const { name, value } = e.target;
-
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     [name]: value, // Only update the field that was changed
-  //   }));
-
-  //   if (name === "same_as_permanent") {
-  //     if (value === "2") {
-  //       // If "Yes" is selected, copy current address to permanent address
-  //       setFormData((prev) => ({
-  //         ...prev,
-  //         permanent_address_street: prev.current_address_street,
-  //         permanent_address_city: prev.current_address_city,
-  //         permanent_address_state: prev.current_address_state,
-  //         permanent_address_pincode: prev.current_address_pincode,
-  //         permanent_address_town: prev.current_address_town,
-  //         permanent_house_no: prev.current_house_no,
-  //       }));
-  //     } else {
-  //       // Clear permanent address fields if "No" is selected
-  //       setFormData((prev) => ({
-  //         ...prev,
-  //         permanent_address_street: "",
-  //         permanent_address_city: "",
-  //         permanent_address_state: "",
-  //         permanent_address_pincode: "",
-  //         permanent_address_town: "",
-  //         permanent_house_no: "",
-  //       }));
-  //     }
-  //   }
-  // };
-   // Check if a field should be visible (based on "dependsOn" rule)
-
-  // // Check if step should be visible (if all its fields are hidden)
-  // const visibleSteps = steps.filter((_, index) => {
-  //   const visibleFields = stepFields[index].filter((f) => isFieldDisabled(f));
-  //   return visibleFields.length > 0;
-  // });
-  // const visibleFields = stepFields[currentStep].filter((field) =>
-  //   isFieldDisabled(field)
-  // );
-
-  // const handleNext = () => {
-  //   if (currentStep < visibleSteps.length - 1)
-  //     setCurrentStep((prev) => prev + 1);
-  // };
-
-// ⭐ NEW FUNCTION ADDED
-
-
-
-  // Filter fields for the active step
+// Filter fields for the active step
   const renderStepContent = (currentStep) => {
     if (!currentStep) return null;
     const currentFields = currentStep?.fields || []; // Access the fields of the current step
@@ -443,15 +303,6 @@ const handleRadioChange = (e) => {
               : "lg:h-auto"
           } `}
         >
-          {/* Render the title for the current step */}
-          {/* <Typography
-            variant="h6"
-            color="blue-gray"
-            className="mb-4 font-roboto text-xl underline font-bold"
-          >
-            {currentStep?.title}
-          </Typography> */}
-
           {/* Map through the fields of the current step */}
           <div
             className={`grid  w-full gap-y-5 gap-x-4 ${
@@ -461,13 +312,6 @@ const handleRadioChange = (e) => {
             } md:grid-cols-3 ` }
           >
             {allFields.map((field, index) => {
-              // const Default=(
-              //                 field.storeLabel
-              //                   ? field?.options?.find(o => o.label === formData[field.name])?.value || ""
-              //                   : formData[field.name]  
-              //               );
-              //               console.log(field)
-              //               console.log(field?.options?.find(o => o?.label === formData[field.name]));
               const getInputClass = (fieldName) =>
                 errors[fieldName]
                   ? "border-red-600 focus:border-red-600"
@@ -519,10 +363,6 @@ const handleRadioChange = (e) => {
                       {field.type === "radio" ? (
                         <div className="flex -mt-2  gap-4">
                           {field.options.map((option, optionIndex) => (
-                            // <label
-                            //   key={optionIndex}
-                            //   className="flex items-center"
-                            // >
                               <Radio  //new
                                 key={optionIndex}                              // ADDED key (important for lists)
                                 id={`${field.name}-${optionIndex}`}            // CHANGED: more unique id
@@ -633,7 +473,7 @@ const handleRadioChange = (e) => {
                             }
                             format="d/m/Y"
                             required={field.required}
-                            className={`react-date-picker pr-[180px] ${
+                            className={`react-date-picker  ${
                               errors[field.name]
                                 ? "border-red-600 focus:border-red-600"
                                 : "border-slate-200"
@@ -642,18 +482,11 @@ const handleRadioChange = (e) => {
                                 ? "bg-gray-200 cursor-not-allowed"
                                 : ""
                             }`}
-                            calendarClassName="rounded-lg font-roboto bg-red-400  flatpickr-calendar shadow-lg"
+                            // calendarClassName="rounded-lg font-roboto bg-red-400  flatpickr-calendar shadow-lg"
                             placeholderText="dd/mm/yyyy"
                             clearIcon={null}
                              onBlur={(value) => validateField(field.name, value, field)}
                              />
-                             {/* // onBlur={(e) =>
-                             //   // validateField(field.name, formData[field.name], field)
-                             //   validateField(field.name, e.target.value, field)
- 
-                             // }
-                             // onKeyDown={(event) => handleKeyDown(event, field.name)}
-                             // onInvalid={(event) => handleInvalid(event, field.name)} // FIX */}
                         </div>
                       ) : field.type === "file" ? (
                         <div className="w-full">
@@ -865,7 +698,6 @@ const handleRadioChange = (e) => {
       }),
     ];
 
-    const requiredFields = dynamicFields.filter((field) => field.required);
     const errors = {};
 
     dynamicFields.forEach((field) => {
@@ -931,15 +763,6 @@ const handleRadioChange = (e) => {
           }
         }
       }
-    // else{
-    //     if (
-    //       field.name === "alternative_mobile_number" && value
-    //     ) {
-    //       if (!/^\d{10}$/.test(value)) {
-    //         errors[field.name] = `${field.label} must be exactly 10 digits`;
-    //       }
-    //     }
-    //   }
     });
 
     setInternalErrors(errors);
@@ -949,9 +772,6 @@ const handleRadioChange = (e) => {
 // ⭐ UNIVERSAL FIELD VALIDATION FOR INPUT, SELECT, RADIO, CHECKBOX, DATEPICKER
 const validateField = (fieldName, value, fieldMeta = {}) => {
   let errorMsg = "";
-  // console.log(fieldName,"name")
-  // console.log("value",value)
-  // console.log("fieldMeta",fieldMeta)
   const isRequired = fieldMeta.required;
 
   const isEmpty =
@@ -964,7 +784,6 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
   if (isRequired && isEmpty) {
     errorMsg = `${fieldMeta.label || fieldName} is required`;
   }
-  // console.log("fieldMeta in formcomponent validateion" , fieldMeta,fieldMeta.acceptedTypes)
   // ⭐ 2. OTHER VALIDATION RULES (MATCHING validateCurrentStep)
   if (!errorMsg && (isRequired || !isEmpty)) {
     if (
@@ -1047,9 +866,9 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
 
 
   const handleNext = () => {
-    // if (!validateCurrentStep()) {
-    //   return; // Stop if required fields aren't filled
-    // }
+    if (!validateCurrentStep()) {
+      return; // Stop if required fields aren't filled
+    }
 
     const isLastStep = correctedActiveStep === filteredSteps.length - 1;
     if (isLastStep) {

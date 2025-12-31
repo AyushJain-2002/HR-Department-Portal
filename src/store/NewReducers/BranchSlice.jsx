@@ -112,36 +112,10 @@ export const fetchBranchById = createAsyncThunk(
   "branches/fetchBranchById",
   async (id, { rejectWithValue }) => {
     try {
-      const userInfo = getUserInfoForLogging();
-      
-      logUserAction("fetch_branch_by_id_attempt", { 
-        userId: userInfo.userId,
-        branchId: id 
-      });
-      
       const response = await apiClient.branches.fetchBranchById(id);
-      
-      Logger.info("Branch fetched successfully", {
-        userId: userInfo.userId,
-        branchId: id,
-        timestamp: new Date().toISOString()
-      }, "BRANCHES");
-      
-      logUserAction("branch_fetched_by_id", { 
-        userId: userInfo.userId,
-        branchId: id 
-      });
-      
       return response.data;
     } catch (error) {
       const errorMessage = handleApiError(error, "Fetch branch by ID");
-      
-      logUserAction("fetch_branch_by_id_failed", {
-        userId: getUserInfoForLogging().userId,
-        branchId: id,
-        error: errorMessage
-      });
-      
       return rejectWithValue(errorMessage);
     }
   }
@@ -551,6 +525,7 @@ const branchSlice = createSlice({
       
       // 🔹 Fetch Branch By ID
       .addCase(fetchBranchById.pending, (state) => {
+        state.fetchSuccess = false;
         state.success = false;
         state.error = null;
         state.editError = null;
@@ -558,12 +533,14 @@ const branchSlice = createSlice({
         state.branch = null;
       })
       .addCase(fetchBranchById.fulfilled, (state, action) => {
+        state.fetchSuccess = true;
         state.loading = false;
         state.branch = action.payload;
         state.editError = null;
         state.error = null;
       })
       .addCase(fetchBranchById.rejected, (state, action) => {
+        state.fetchSuccess = false;
         state.loading = false;
         state.error = action.payload;
         state.branch = null;

@@ -1,6 +1,4 @@
 import { 
-  GiftIcon, 
-  DocumentTextIcon, 
   UserIcon, 
   IdentificationIcon,
   ClipboardDocumentIcon
@@ -20,11 +18,11 @@ const Generate = {
         className: "text-lg font-extrabold text-gray-500",
       }),
       data: [
-        { title: "Offer Letter", link: "hr/employee/offer-letter" },
-        { title: "Relieving Letter", link: "hr/employee/relieving-letter" },
-        { title: "Experience Letter", link: "hr/employee/experience-letter" },
-        { title: "Termination Letter", link: "hr/employee/termination-letter" },
-        { title: "Full N Final", link: "hr/employee/full-n-final" },
+        { title: "Offer Letter", link: "hr/Employee/offer-letter" },
+        { title: "Relieving Letter", link: "hr/Employee/relieving-letter" },
+        { title: "Experience Letter", link: "hr/Employee/experience-letter" },
+        { title: "Termination Letter", link: "hr/Employee/termination-letter" },
+        { title: "Full N Final", link: "hr/Employee/full-n-final" },
       ],
     },
     {
@@ -34,55 +32,11 @@ const Generate = {
         className: "text-lg font-extrabold text-gray-500",
       }),
       data: [
-        { title: "POSP Relieving Letter", link: "hr/posp/relieving-letter" },
-        { title: "POSP Certificate", link: "hr/posp/certificate" },
+        { title: "POSP Relieving Letter", link: "hr/Posp/relieving-letter" },
+        { title: "POSP Certificate", link: "hr/Posp/certificate" },
       ],
     },
   ],
 };
 
 export default Generate;
-
-
-
-
-// import { GiftIcon } from "@heroicons/react/24/outline";
-// import React from "react";
-
-// const Generate = 
-//   {
-//     title: "Generate",
-//     icon: React.createElement(GiftIcon, {
-//       className: "text-lg font-extrabold text-gray-500",
-//     }),
-//     data: [
-//       {
-//         title: "Employee",
-//         role: ["SuperAdmin", "HR", "HR-Head"],
-//         icon: React.createElement(GiftIcon, {
-//           className: "text-lg font-extrabold text-gray-500",
-//         }),
-//         data: [
-//           { title: "Offer Letter", link: "hr/employee/offer-letter" },
-//           { title: "Relieving Letter", link: "hr/employee/relieving-letter" },
-//           { title: "Experience Letter", link: "hr/employee/experience-letter" },
-//           { title: "Termination Letter", link: "hr/employee/termination-letter" },
-//           { title: "Full N Final", link: "hr/employee/full-n-final" },
-//         ],
-//       },
-//       {
-//         title: "POSP",
-//         role: ["SuperAdmin", "HR", "HR-Head"],
-//         icon: React.createElement(GiftIcon, {
-//           className: "text-lg font-extrabold text-gray-500",
-//         }),
-//         data: [
-//           { title: "POSP Relieving Letter", link: "hr/posp/relieving-letter" },
-//           { title: "POSP Certificate", link: "hr/posp/certificate" },
-//         ],
-//       },
-//     ],
-//   };
-
-
-// export default Generate;

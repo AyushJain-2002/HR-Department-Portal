@@ -1,18 +1,8 @@
 import React, { useEffect, useMemo } from "react";
-// import {
-//   fetchAllEmployees,
-//   toggleEmployeeStatus,
-// } from "../../../store/Actions/EmployeeAction";
-import { useSelector } from "react-redux";
 import { toast, ToastContainer } from "react-toastify";
-import ReusableTable from "../../TableActions/ReusableTable";
 import { Card, Typography } from "@material-tailwind/react";
-// import { fetchMisps, toggleMispActiveStatus } from "../../../store/Actions/MispAction";
-
+import TableLayout from "../../TableActions/TableLayout";
 const MispReport = () => {
-  // const { createSuccess,misps, createError, loading, error } = useSelector(
-  //     (state) => state.misp
-  //   );
     const {fetchMisps, toggleMispActiveStatus,createSuccess,misps, createError, loading, error} =useMisp();
   useEffect(() => {
  if(!misps || misps.length === 0) (fetchMisps()); // Fetch zones on component mount
@@ -97,9 +87,9 @@ const MispReport = () => {
     <Typography variant="h4" color="blue-gray">
       Misp Report
     </Typography>
-  <ReusableTable
+  <TableLayout
     tableHeaders={columnKeys.map((col) => col.label)}
-    tableData={flattenedMisps}
+    filteredData={flattenedMisps}
     handleDelete={handleDelete}
     columnKeys={columnKeys}
     fileName="Fuels"
@@ -107,7 +97,18 @@ const MispReport = () => {
     handleToggle={handleToggle}
     
   />
-  <ToastContainer />
+  <ToastContainer 
+  className="mt-16" // Add margin top to push toasts down from header
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"/>
 </div>
   )
 }

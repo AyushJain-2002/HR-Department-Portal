@@ -15,7 +15,7 @@ class TokenManager {
   getAccessToken() {
     try {
       const token = this.storage.get(TOKEN_CONFIG.ACCESS_TOKEN_KEY);
-      
+      console.log("token")
       // 🔹 ADDED: Log token retrieval
       if (token) {
         logger.debug("Access token retrieved", {

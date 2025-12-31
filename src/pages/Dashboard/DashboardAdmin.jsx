@@ -121,7 +121,7 @@ const DashboardAdmin = () => {
                         <div className="relative">
                             <div className="w-24 h-24 bg-white p-1 rounded-full absolute -bottom-10 left-1/2 transform -translate-x-1/2 shadow-md ring-4 ring-white">
                                 <img
-                                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8YXZhdGFyfGVufDB8fDB8fHww"
+                                    src="https://Images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8YXZhdGFyfGVufDB8fDB8fHww"
                                     alt="User avatar"
                                     className="w-full h-full rounded-full object-cover"
                                 />

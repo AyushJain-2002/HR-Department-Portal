@@ -1,29 +1,19 @@
 import { Card, Typography } from "@material-tailwind/react";
 import React, { useEffect, useRef, useState } from "react";
-// import { useDispatch, useSelector } from "react-redux";
 import { toast, ToastContainer } from "react-toastify";
 import DynamicForm from "../Tables/DynamicForm";
 import TableLayout from "../TableActions/TableLayout";
 import Button from "../../components/ui/button/Button";
 import "react-toastify/dist/ReactToastify.css";
-// import {
-//   addDesignation,
-//   deleteDesignation,
-//   fetchDesignation,
-// } from "../../store/Actions/Department_Designation_Action";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import Loading from "../Loading";
 import { useDepartment } from "../../hooks/hookIndex";
 import { useLocation, useParams } from "react-router";
 
 const Designation = () => {
-  // const dispatch = useDispatch();
   const [formData, setFormData] = useState({designationName:""});
   const location = useLocation();
   const {id} =useParams();
-  // const { designations, success, loading, error } = useSelector(
-  //   (state) => state.departments
-  // );
   const { designations=[], success, loading, error , createDesignation,deleteDesignation,fetchDesignation}=useDepartment()
   const isResetMode=!!id;
   useEffect(() => {
@@ -44,16 +34,8 @@ const Designation = () => {
         designationName:""
       }));
   };
-  // const handleEdit=()=>{
-  //   setFormData(prev=>({
-  //     ...prev,
-  //     designationName:"updatedName"
-  //   }))
-  // }
-
   // ✅ FIX: persistent toast reference
   const activeToastId = useRef(null);
-
   const handleDelete = (depID) => {
     if (activeToastId.current) {
       toast.dismiss(activeToastId.current);
@@ -148,29 +130,6 @@ const Designation = () => {
     };
   }
 
-  // // Custom submit button for DynamicForm
-  // const CustomSubmitButton = (handleSubmit) => (
-  //   <div className="flex flex-col md:flex-row gap-4 w-full justify-center">
-  //     <Button 
-  //       size="md"
-  //       variant="primary"
-  //       onClick={handleSubmit}
-  //       className="w-full md:w-auto"
-  //       disabled={loading}
-  //     >
-  //       {loading ? "Creating..." : "Create Designation"}
-  //     </Button>
-  //     <Button 
-  //       size="md"
-  //       variant="outline"
-  //       type="button"
-  //       onClick={handleReset}
-  //       className="w-full md:w-auto"
-  //     >
-  //       Reset
-  //     </Button>
-  //   </div>
-  // );
 
   // TableLayout columns configuration
   const tableColumns = [

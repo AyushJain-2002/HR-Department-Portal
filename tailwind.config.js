@@ -573,6 +573,7 @@ module.exports = withMT({
 
       ".flatpickr-calendar": {
         marginTop: "0.5rem",
+        // top:"230px !important",
         "background-color": "white !important",
         padding: "1.25rem !important",
         border: "1px solid rgb(229 231 235 / 1) !important",
@@ -580,7 +581,7 @@ module.exports = withMT({
         color: "rgb(107 114 128 / 1) !important",
       },
       ".dark .flatpickr-calendar": {
-        "background-color": "var(--gray-dark) !important",
+        "background-color": "rgb(55 65 81 / 1) !important",
         border: "1px solid rgb(55 65 81 / 1) !important",
         color: "rgb(156 163 175 / 1) !important",
       },

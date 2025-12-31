@@ -1,8 +1,8 @@
-// services/PolicyReferByService.js
+// services/policyReferByService.js
 import {HttpClient} from '../../Utils/http-client.jsx';
 import { withRetry } from '../../Utils/retry';
 import ENDPOINTS from '../Endpoints';
-import { ErrorHandler } from '../../utils/error-handler';
+import { ErrorHandler } from '../../Utils/error-handler';
 import logger from '../Logger';
 
 export class PolicyReferByService {
@@ -45,7 +45,7 @@ export class PolicyReferByService {
   }
 
   // 🔹 Get policy refer by by ID
-  async getPolicyReferByById(id) {
+  async getPolicyReferById(id) {
     try {
       if (!id) {
         throw new Error("Policy refer by ID is required");
@@ -54,7 +54,7 @@ export class PolicyReferByService {
         this.httpClient.get(ENDPOINTS.POLICY_REFER_BY.GET_BY_ID(id))
       );
     } catch (error) {
-      throw ErrorHandler.handle(error, "PolicyReferByService.getPolicyReferByById");
+      throw ErrorHandler.handle(error, "PolicyReferByService.getPolicyReferById");
     }
   }
 

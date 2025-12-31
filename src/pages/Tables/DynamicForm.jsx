@@ -27,22 +27,19 @@ export default function DynamicForm({
   const [formData, setFormData] = useState(initialValues);
   const [internalErrors, setInternalErrors] = useState({});
   const [isInitialized, setIsInitialized] = useState(false);
-  
+  const [showAllErrors, setShowAllErrors] = useState(false); // ⭐ ADDED: Track when to show all errors
+
   const {fetchCitiesByState,fetchCitiesByStateAnother}=useStateData();
   const location =useLocation();
-  // console.log(config,"department")
   // Reset form after successful submit
   useEffect(() => {
     if (resetAfterSubmit) {
       setFormData({});
       setInternalErrors({});
+      setShowAllErrors(false); // ⭐ ADDED: Reset error display
     }
   }, [resetAfterSubmit]);
    useEffect(() => {
-      // const isEditPage = ![
-      //   "/master/hr/create-employee",
-      //   "/master/hr/add-misp",
-      // ].includes(location.pathname);
   
       if (
         isEditPage &&
@@ -63,7 +60,8 @@ export default function DynamicForm({
         return acc;
       }, {});
       setFormData(newFormData);
-      // setResetFlag(false); // Reset the flag after reset
+      setInternalErrors({});
+      setShowAllErrors(false); // ⭐ ADDED: Reset error display on success
       }
   }, [success]);
 
@@ -72,90 +70,32 @@ export default function DynamicForm({
       ...prev,
       [name]: value,
     }));
-    // console.log(value);
-    // if (onChange) {
-    //   onChange(name, value);
-    // }
   }
   const handleRadioChange = (e) => {
   const { name, value } = e.target;
 
   setFormData((prev) => {
     const updated = { ...prev, [name]: value };
-
-    // if (name === "same_as_permanent") {
-    //   if (value === "2") {
-    //     // 🔴 FIXED: If "Yes" is selected, copy ALL current address fields to permanent
-    //     console.log("Copying current address to permanent...");
-    //     return {
-    //       ...updated,
-    //       permanent_house_no: prev.current_house_no || "",
-    //       permanent_address_street: prev.current_address_street || "",
-    //       permanent_address_state: prev.current_address_state || "",
-    //       permanent_address_city: prev.current_address_city || "",
-    //       permanent_address_town: prev.current_address_town || "",
-    //       permanent_address_pincode: prev.current_address_pincode || "",
-    //     };
-    //   } else {
-    //     // 🔴 FIXED: Clear permanent address fields if "No" is selected
-    //     console.log("Clearing permanent address fields...");
-    //     return {
-    //       ...updated,
-    //       permanent_house_no: "",
-    //       permanent_address_street: "",
-    //       permanent_address_state: "",
-    //       permanent_address_city: "",
-    //       permanent_address_town: "",
-    //       permanent_address_pincode: "",
-    //     };
-    //   }
-    // }
-
     return updated;
   });
 };
 
  const handleChange = (selectedOption, actionMeta) => {
-    // console.log("selectedOption with action meta",selectedOption,actionMeta)
     const name = actionMeta?.name;
-    // console.log("selectedopt",selectedOption)
-    // validateField(name,selectedOption.value,actionMeta)
-    // console.log(internalErrors) ;
     const value =selectedOption?.value || "";
 
-    // console.log(`value ${value} on name ${name}`)
     setFormData((prev) => {
       let updatedFormData = { ...prev, [name]: value };
 
       if (name === "current_address_state") {
         updatedFormData.current_address_city = "";
-        // updatedFormData[name] = selectedOption?.label; // Set state name as label
         (fetchCitiesByState(value));
       } else if (name === "permanent_address_state") {
         updatedFormData.permanent_address_city = "";
-        // updatedFormData[name] = selectedOption?.label; // Set state name as label
         (fetchCitiesByStateAnother(value));
       } else if (name === "state") {
         updatedFormData.city = "";
-        // updatedFormData[name] = selectedOption?.label; // Set state name as label
         (fetchCitiesByState(value));
-      // } else if (name === "bqp") {
-      //   updatedFormData.relationship_manager = "";
-      //   updatedFormData.reporting_manager = "";
-      //   // updatedFormData[name] = selectedOption?.value; // Set state name as label
-      //   (fetchReportingManager(value));
-      //   (fetchRelationshipManager(value));
-      //   (fetchReportingManagerWithPosp(value));
-      // }
-      // else if (name === "reporting_manager") {
-      //   updatedFormData.relationship_manager = "";
-      //   updatedFormData[name] = selectedOption.value; // Set state name as label
-      //   // dispatch(fetchRelationshipManager(value));
-      // }
-      // else if (name === "relationship_manager") {
-      //   // updatedFormData.posp_id = "";
-      //   updatedFormData[name] = selectedOption?.value; // Set state name as label
-      //   // (fetchPosp(value));
       }
        else if (
         name === "title" ||
@@ -176,193 +116,146 @@ export default function DynamicForm({
       ) {
         // if(name === "branch_id")
           updatedFormData[name]=selectedOption?.value;
-        // else
-        // updatedFormData[name] = selectedOption?.label; // ✅ Set title as label
       }
-      // console.log(`updated form data ${updatedFormData[name]}`)
       return updatedFormData;
     });
+    // ⭐ ADDED: Clear error when user starts typing
+    if (internalErrors[name]) {
+      setInternalErrors(prev => {
+        const newErrors = {...prev};
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
-   const validateCurrentStep = () => {
-     (config.stepFields.map((step,index)=>{
-      // console.log(step.fields)
-      
+const validateCurrentStep = () => {
+    const allErrors = {};
+    let hasErrors = false;
+    
+    config.stepFields.forEach((step) => {
       const dynamicFields = [
-      ...(step.fields || []),
-      ...(step.fields2 || []),
-      ...(step.fields3 || []).map((field) => {
-        if (
-          [
-            "name_of_insurer",
-            "agency_code_no",
-            "date_of_appointment_as_agency",
-            "date_of_cessation_of_agency",
-            "reason_for_cessation_agency",
-            "noc_issused_by_other_insurer_image",
-          ].includes(field.name)
-        ) {
-          return {
-            ...field,
-            // required: isOtherInsurerYes,
-          };
-        }
-        return field;
-      }),
-    ];
+        ...(step.fields || []),
+        ...(step.fields2 || []),
+        ...(step.fields3 || []),
+      ];
 
-    // const requiredFields = dynamicFields.filter((field) => field.required);
-    const errors = {};
       dynamicFields.forEach((field) => {
-        // console.log(field)
         const value = formData[field.name];
-        const isEmpty =
-        value === undefined ||
-        value === "" ||
-        value === null ||
-        (field.type === "file" && value === "null");
+        const isEmpty = value === undefined || value === "" || value === null || 
+                       (field.type === "file" && value === "null");
+
         if (field.required && isEmpty) {
-          errors[field.name] = `${field.label} is required`;
+          allErrors[field.name] = `${field.label || field.name} is required`;
+          hasErrors = true;
         } else if (field.required || !isEmpty) {
-          // Extra validations based on field name
-          // console.log(field.type, field.name)
           if (
             field.name === "mobile_no" ||
             field.name === "alternative_mobile_no" ||
             field.name === "alternative_mobile_number"
           ) {
-            if (!/^\d{10}$/.test(value)) {
-              errors[field.name] = `${field.label} must be exactly 10 digits`;
+            if (value && !/^\d{10}$/.test(value)) {
+              allErrors[field.name] = `${field.label} must be exactly 10 digits`;
+              hasErrors = true;
             }
           } else if (field.name === "pancard_number") {
-            if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(value)) {
-              errors[field.name] = "Invalid PAN format (e.g., ABCDE1234F)";
+            if (value && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(value)) {
+              allErrors[field.name] = "Invalid PAN format (e.g., ABCDE1234F)";
+              hasErrors = true;
             }
           } else if (field.name === "date_of_birth") {
-            const dob = new Date(value);
-            const today = new Date();
-            const age = today.getFullYear() - dob.getFullYear();
-            const hasBirthdayPassed =
-              today.getMonth() > dob.getMonth() ||
-              (today.getMonth() === dob.getMonth() &&
-                today.getDate() >= dob.getDate());
+            if (value) {
+              const dob = new Date(value);
+              const today = new Date();
+              const age = today.getFullYear() - dob.getFullYear();
+              const hasBirthdayPassed =
+                today.getMonth() > dob.getMonth() ||
+                (today.getMonth() === dob.getMonth() && today.getDate() >= dob.getDate());
+              const actualAge = hasBirthdayPassed ? age : age - 1;
 
-            const actualAge = hasBirthdayPassed ? age : age - 1;
-
-            if (actualAge < 18) {
-              errors[field.name] = "User must be at least 18 years old";
+              if (actualAge < 18) {
+                allErrors[field.name] = "User must be at least 18 years old";
+                hasErrors = true;
+              }
             }
           } else if (field.name === "aadhar_no") {
-            if (!/^\d{12}$/.test(value)) {
-              errors[field.name] = "Aadhaar must be exactly 12 digits";
+            if (value && !/^\d{12}$/.test(value)) {
+              allErrors[field.name] = "Aadhaar must be exactly 12 digits";
+              hasErrors = true;
             }
-          } else if (
-            field.name === "bankaccount_no" ||
-            field.name === "account_number"
-          ) {
-            if (!/^\d{9,18}$/.test(value)) {
-              errors[field.name] = "Account number must be 9 to 18 digits";
+          } else if (field.name === "bankaccount_no" || field.name === "account_number") {
+            if (value && !/^\d{9,18}$/.test(value)) {
+              allErrors[field.name] = "Account number must be 9 to 18 digits";
+              hasErrors = true;
             }
           } else if (
             field.name === "pincode" ||
             field.name === "permanent_address_pincode" ||
             field.name === "current_address_pincode"
           ) {
-            if (!/^\d{6}$/.test(value)) {
-              errors[field.name] = "Pincode must be exactly 6 digits";
+            if (value && !/^\d{6}$/.test(value)) {
+              allErrors[field.name] = "Pincode must be exactly 6 digits";
+              hasErrors = true;
             }
           } else if (field.type === "email" && value) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(value)) {
-              errors[field.name] = "Invalid email format";
+              allErrors[field.name] = "Invalid email format";
+              hasErrors = true;
             }
           }
         }
       });
-    }))
-    setInternalErrors(errors);
-    return Object.keys(errors).length === 0;
+    });
+
+    setInternalErrors(allErrors);
+    setShowAllErrors(hasErrors); // ⭐ ADDED: Show all errors when validation fails
+    return hasErrors;
   };
- const handleSubmit = () => {
-    if (!validateCurrentStep()) {
-    console.log("me yaha hu error aa gai")
+
+const handleSubmit = () => {
+    const hasErrors = validateCurrentStep();
+    if (hasErrors) {
       return; // Stop if required fields aren't filled
     }
-    console.log("me yaha hu",formData)
-    // if (onSubmit) onSubmit(formData);
     try {
-      // console.log("formData:", formData);
-
       onSubmit(formData);
-      // setResetFlag(true);
+      setShowAllErrors(false); // ⭐ ADDED: Hide errors on successful submission
     } catch (error) {
       console.log(error);
-      // alert("Failed to submit the form. Please try again.");
     }
   };
     // Submit handler 
-const handleEdit = () => {
-  if (!validateCurrentStep()) {
-      console.log("me yaha hu error aa gai")
-        return; // Stop if required fields aren't filled
-      }
-      console.log("me yaha hu")
-      // if (onSubmit) onSubmit(formData);
-      try {
-        // console.log("formData:", formData);
-
-        onEdit(formData);
-        // setResetFlag(true);
-      } catch (error) {
-        console.log(error);
-        // alert("Failed to submit the form. Please try again.");
-      }
+ const handleEdit = () => {
+    const hasErrors = validateCurrentStep();
+    if (hasErrors) {
+      return; // Stop if required fields aren't filled
+    }
+    try {
+      onEdit(formData);
+      setShowAllErrors(false); // ⭐ ADDED: Hide errors on successful edit
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleReset = () => {
-  if (!validateCurrentStep()) {
-      console.log("me yaha hu error aa gai")
-        return; // Stop if required fields aren't filled
-      }
-      console.log("me yaha hu")
-      // if (onSubmit) onSubmit(formData);
-      try {
-        // console.log("formData:", formData);
-
-        onReset(formData);
-        // setResetFlag(true);
-      } catch (error) {
-        console.log(error);
-        // alert("Failed to submit the form. Please try again.");
-      }
+    const hasErrors = validateCurrentStep();
+    if (hasErrors) {
+      return; // Stop if required fields aren't filled
+    }
+    try {
+      onReset(formData);
+      setShowAllErrors(false); // ⭐ ADDED: Hide errors on reset
+    } catch (error) {
+      console.log(error);
+    }
   };
 
    const isFieldDisabled = (field) => {
      const deps = field?.dependsOn;
       // No dependencies → never disabled
       if (!deps || deps.length === 0) return false;
-      // // 1️⃣ If "same_as_permanent" exists in dependsOn
-      // const hasSAP = deps.includes("same_as_permanent");
-      // if (hasSAP) {
-      //   // Auto-fill mode → disable field
-      //   if (formData.same_as_permanent === "2") {
-      //     return true;
-      //   }
-
-      //   // If field also depends on permanent_address_state
-      //   if (deps.includes("permanent_address_state")) {
-      //     return !formData.permanent_address_state;
-      //   }
-
-      //   // Only depends on same_as_permanent → enable when SAP = "1"
-      //   return false;
-      // }
-      // 2️⃣ NORMAL dependency (like permanent_address_city → permanent_address_state)
-      // 🔴 FIXED: Check if permanent_address_city depends on permanent_address_state
-      // if (field.name === "permanent_address_city" && deps.includes("permanent_address_state")) {
-      //   return !formData.permanent_address_state || formData.same_as_permanent === "2";
-      // }
-      // 2️⃣ NORMAL dependency (like current_address_city → current_address_state)
       return deps.some((d) => !formData[d]);
 };
 
@@ -409,27 +302,36 @@ const handleTextInput = (event) => {
       ...prev,
       [name]: formattedValue || "",
     }));
+ // ⭐ ADDED: Clear error when user starts typing
+    if (internalErrors[name]) {
+      setInternalErrors(prev => {
+        const newErrors = {...prev};
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
+
 
   // ⭐ UNIVERSAL FIELD VALIDATION FOR INPUT, SELECT, RADIO, CHECKBOX, DATEPICKER
 const validateField = (fieldName, value, fieldMeta = {}) => {
   let errorMsg = "";
-  // console.log(fieldName,"name")
-  // console.log("value",value)
-  // console.log("fieldMeta",fieldMeta)
   const isRequired = fieldMeta.required;
-
+  
   const isEmpty =
     value === undefined ||
     value === "" ||
     value === null ||
     (fieldMeta.type === "file" && value === "null");
+    
+    //submit button validation
+  if(fieldMeta.type==="button"||fieldMeta.type==="submit"){
+  }
 
   // ⭐ 1. REQUIRED VALIDATION
   if (isRequired && isEmpty) {
     errorMsg = `${fieldMeta.label || fieldName} is required`;
   }
-  // console.log("fieldMeta in formcomponent validateion" , fieldMeta,fieldMeta.acceptedTypes)
   // ⭐ 2. OTHER VALIDATION RULES (MATCHING validateCurrentStep)
   if (!errorMsg && (isRequired || !isEmpty)) {
     if (
@@ -509,10 +411,25 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
     [fieldName]: errorMsg,
   }));
 };
+
+// ⭐ ADDED: Helper function to get error for a field
+  const getFieldError = (fieldName) => {
+    // Show error if:
+    // 1. There's an internal error for this field
+    // 2. AND (showAllErrors is true OR the field has been touched)
+    if (internalErrors[fieldName] && showAllErrors) {
+      return internalErrors[fieldName];
+    }
+    if (errors[fieldName]) {
+      return errors[fieldName];
+    }
+    return "";
+  };
+
   // Render fields dynamically
   const renderField = (field) => {
-    // console.log(field.name,field.value)
     if (field.hidden) return null;
+    const fieldError = getFieldError(field.name); // ⭐ ADDED: Get error for this field
     switch (field.type) {
       case "select":
         return (
@@ -525,8 +442,10 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
             onBlur={() =>validateField(field.name, formData[field.name], field)}
             disabled={field.disabled  || isFieldDisabled(field)}
             defaultValue={field.storeLabel? field?.options?.find(o => o.value === formData[field.name])?.value || "": formData[field.name]}
-            error={!!errors[field.name] || !!internalErrors[field.name]}
-            hint={internalErrors[field.name] || errors[field.name]  || field.hint}
+            // error={!!errors[field.name] || !!internalErrors[field.name]}
+            // hint={internalErrors[field.name] || errors[field.name]  || field.hint}
+            error={!!fieldError} // ⭐ CHANGED: Use fieldError instead
+            hint={fieldError || field.hint} // ⭐ CHANGED: Use fieldError instead
             options={field.options || []} // Pass options via props
             loading={false} // You can pass loading state if needed
             className={`${field.readOnly || isFieldDisabled(field)? "bg-gray-100 dark:bg-gray-500 rounded-lg ": "bg-transparent"
@@ -556,8 +475,10 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
                 field.readOnly || isFieldDisabled(field)? "bg-gray-200": "bg-transparent"} 
                 ${errors[field.name]? "border-red-600 focus:border-red-600": "border-slate-200"} 
                 ${field.className}`}
-              error={!!errors[field.name] || !!internalErrors[field.name]}
-              hint={internalErrors[field.name] || errors[field.name]  || field.hint}
+              // error={!!errors[field.name] || !!internalErrors[field.name]}
+              // hint={internalErrors[field.name] || errors[field.name]  || field.hint}
+              error={!!fieldError} // ⭐ CHANGED: Use fieldError instead
+              hint={fieldError || field.hint} // ⭐ CHANGED: Use fieldError instead
             />
             </div>
         );
@@ -573,8 +494,10 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
               type={field.type}
               placeholder={field.label}
               // value={String(formData[field.name] || field?.value || "" )}
-              error={!!errors[field.name] || !!internalErrors[field.name]}
-              hint={internalErrors[field.name] || errors[field.name]  || field.hint}
+              // error={!!errors[field.name] || !!internalErrors[field.name]}
+              // hint={internalErrors[field.name] || errors[field.name]  || field.hint}
+              error={!!fieldError} // ⭐ CHANGED: Use fieldError instead
+              hint={fieldError || field.hint} // ⭐ CHANGED: Use fieldError instead
               disabled={field.disabled}
               name={field.name}
               yearPlaceholder="yy"
@@ -676,8 +599,10 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
                    onBlur={() =>
                      validateField(field.name, formData[field.name], field)
                    }
-                   error={!!errors[field.name] || !!internalErrors[field.name]}
-                   hint={internalErrors[field.name] || errors[field.name]  || field.hint}
+                  //  error={!!errors[field.name] || !!internalErrors[field.name]}
+                  //  hint={internalErrors[field.name] || errors[field.name]  || field.hint}
+                  error={!!fieldError} // ⭐ CHANGED: Use fieldError instead
+                  hint={fieldError || field.hint} // ⭐ CHANGED: Use fieldError instead
                    disabled={field.readOnly || isReadOnly }
                    required={!formData[field.name] && field.required}
                    className={`block w-full text-sm text-gray-900 border border-gray-300 rounded-lg ${
@@ -701,6 +626,11 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
                 id={`${field.name}-${field.type}`} 
                 type={field.type}
                 children={field.label}
+                onBlur={() =>validateField(field.name, formData[field.name], field)}
+                // error={!!errors[field.name] || !!internalErrors[field.name]}
+                // hint={internalErrors[field.name] || errors[field.name]  || field.hint}
+                error={!!fieldError} // ⭐ CHANGED: Use fieldError instead
+                hint={fieldError || field.hint} // ⭐ CHANGED: Use fieldError instead
                 onClick={()=>{
                  if (field.type =="edit")
                     handleEdit()
@@ -715,10 +645,7 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
         return <div key={field.name}>Unknown field type: {field.type}</div>;
     }
   };
-  // console.log("confing stepfield ",config.stepFields)
-  // config.stepFields.map((step, index) => (console.log("config map",step)))
   return (
-    // <form onSubmit={handleSubmit}  className="space-y-6 mt-4 p-5">
       <form
     className={`mt-8 mb-2 ${
       window.innerWidth < 640 ? "w-full px-2" : "w-80 max-w-screen"} sm:w-full`}
@@ -740,7 +667,7 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
            </div>
           </div>
         </div>
-      ))}
+))}
 
 
     </form>
@@ -748,136 +675,3 @@ const validateField = (fieldName, value, fieldMeta = {}) => {
 }
 
 
-
-// import React, { useEffect, useState } from "react";
-// import { Typography } from "@material-tailwind/react";
-// import SelectInputs from "../../components/form/form-elements/SelectInputs";
-// import Input from "../../components/form/input/InputField";
-// import FormButton from "../../components/ui/button/Button"; // ← your custom button
-
-// export default function DynamicForm({ config, onSubmit, resetAfterSubmit }) {
-//   const [formData, setFormData] = useState({});
-//   const [errors, setErrors] = useState({});
-//   // Reset form data
-//   useEffect(() => {
-//     if (resetAfterSubmit) {
-//       setFormData({});
-//       setErrors({});
-//     }
-//   }, [resetAfterSubmit]);
-
-//   // Generic set value to formData
-//   const handleChange = (value, field) => {
-//     const newValue = value?.value || value?.target?.value || value;
-
-//     setFormData((prev) => ({
-//       ...prev,
-//       [field.name]: newValue,
-//     }));
-
-//     setErrors((prev) => ({ ...prev, [field.name]: "" }));
-//   };
-
-//   // Required validations
-//   const validateForm = () => {
-//     const newErrors = {};
-
-//     config.stepFields.forEach((step) => {
-//       step.fields.forEach((field) => {
-//         if (field.required && !formData[field.name]) {
-//           newErrors[field.name] = `${field.label} is required`;
-//         }
-//       });
-//     });
-
-//     setErrors(newErrors);
-//     return Object.keys(newErrors).length === 0;
-//   };
-
-//   // Submit handler
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     if (!validateForm()) return;
-//     if (onSubmit) onSubmit(formData);
-//   };
-
-//   // Renders input components dynamically
-//   const renderField = (field) => {
-//     if (field.hidden) return null;
-
-//     switch (field.type) {
-//       case "select":
-//         return (
-//           <SelectInputs
-//             key={field.name}
-//             field={field}
-//             options={field.options}
-//             formData={formData}
-//             onChange={handleChange}
-//             errors={errors}
-//           />
-//         );
-
-//       case "text":
-//       case "number":
-//       case "password":
-//         return (
-//           <Input
-//             key={field.name}
-//             type={field.type}
-//             name={field.name}
-//             placeholder={field.placeholder}
-//             value={formData[field.name] || ""}
-//             onChange={(e) => handleChange(e, field)}
-//             error={!!errors[field.name]}
-//             hint={errors[field.name] || field.hint}
-//             disabled={field.disabled}
-//           />
-//         );
-
-//       default:
-//         return <div key={field.name}>Unknown field type: {field.type}</div>;
-//     }
-//   };
-
-//   return (
-//     <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-//       {/* Steps Loop */}
-//       {config.stepFields.map((step, stepIndex) => (
-//         <div key={stepIndex} className="">
-//           <Typography variant="h5" className="mb-4 font-pt_serif">
-//             {step.title}
-//           </Typography>
-
-//           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//             {step.fields.map((field) => renderField(field))}
-//           </div>
-//         </div>
-//       ))}
-
-//       {/* ACTION BUTTONS */}
-//       <div className="flex justify-center gap-3">
-
-//         {/* SUBMIT BUTTON */}
-//         <FormButton
-//           size="lg"
-//           variant="primary"
-//           type="submit"
-//         >
-//           Submit
-//         </FormButton>
-
-//         {/* EXAMPLE EXTRA BUTTONS FOR FUTURE */}
-//         {/* 
-//         <FormButton variant="outline" onClick={() => console.log("Cancel")}>
-//           Cancel
-//         </FormButton>
-
-//         <FormButton variant="primary" startIcon={<PlusIcon />}>
-//           Add More
-//         </FormButton>
-//         */}
-//       </div>
-//     </form>
-//   );
-// }

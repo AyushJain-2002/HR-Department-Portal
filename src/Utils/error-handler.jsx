@@ -1,7 +1,8 @@
 import logger from '../api/Logger';
 
 export class ApiError {
-  constructor(message, status) {
+  constructor(data,message, status) {
+    this.data=data;
     this.message = message;
     this.status = status;
   }
@@ -10,7 +11,7 @@ export class ApiError {
 export class ErrorHandler {
   static handle(error, context) {
     let apiError;
-
+    // console.log(apiError)
     if (error instanceof ApiError) {
       apiError = error;
     } else if (error instanceof Error) {
@@ -18,10 +19,11 @@ export class ErrorHandler {
     } else {
       apiError = new ApiError('Unknown error occurred', 0);
     }
-
+    // console.log("api error",error,apiError)
     logger.error(
       'API Error handled',
       {
+        data:apiError.data,
         message: apiError.message,
         status: apiError.status,
         originalError: error,

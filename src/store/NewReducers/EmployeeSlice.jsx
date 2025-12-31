@@ -1,4 +1,4 @@
-// slices/employeeSlice.js
+// slices/EmployeeSlice.js
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { apiClient } from '../../api/apiClient';
 import Logger from '../../api/Logger';
@@ -34,24 +34,7 @@ const getUserInfoForLogging = () => {
 // Helper function to handle API errors
 const handleApiError = (error, action) => {
   let errorMessage = "Something went wrong";
-  
-  if (error.response?.data?.message) {
-    errorMessage = error.response.data.message;
-  } else if (error.response?.data) {
-    errorMessage = typeof error.response.data === 'string' 
-      ? error.response.data 
-      : JSON.stringify(error.response.data);
-  } else if (error.message) {
-    errorMessage = error.message;
-  }
-  
-  const userInfo = getUserInfoForLogging();
-  Logger.error(`${action} failed`, {
-    error: errorMessage,
-    userId: userInfo.userId,
-    email: userInfo.email,
-  }, "EMPLOYEE_API_ERROR");
-  
+  errorMessage=error
   return errorMessage;
 };
 
@@ -161,70 +144,23 @@ export const fetchEmployeeById = createAsyncThunk(
 
 // 🔹 Create Employee
 export const createEmployee = createAsyncThunk(
-  "employees/createEmployee",
+  "employees/CreateEmployee",
   async (employeeData, { rejectWithValue }) => {
     try {
-      const userInfo = getUserInfoForLogging();
+      const formData = Object.entries(employeeData).reduce((acc, [key, value]) => {
+        if(value instanceof File)
+          acc[key]=value;
+        else
+          acc[key] = String(value);
       
-      logUserAction("create_employee_attempt", { 
-        userId: userInfo.userId,
-        employeeEmail: employeeData.email 
-      });
-      
-      const formData = new FormData();
-      
-      // Append all employee data to formData
-      // Object.keys(employeeData).forEach(key => {
-      //   if (employeeData[key] !== null && employeeData[key] !== undefined) {
-      //     formData.append(key, employeeData[key]);
-      //   }
-      // });
-      // Object.entries(employeeData).forEach(([key, value]) => {
-      //   // ❌ skip empty, null, undefined
-      //   if (
-      //     value === undefined ||
-      //     value === null ||
-      //     value === ""
-      //   ) {
-      //     return;
-      //   }
-
-      //   // ✅ File objects
-      //   if (value instanceof File) {
-      //     formData.append(key, value);
-      //     return;
-      //   }
-
-      //   // ✅ Everything else (string, number, boolean)
-      //   formData.append(key, value);
-      // });
-
-      // console.log(formData)
-      const response = await apiClient.employee.createEmployee(employeeData);
-      
-      Logger.info("Employee created successfully", {
-        userId: userInfo.userId,
-        employeeId: response.data.employee?.id,
-        employeeEmail: employeeData.email,
-        timestamp: new Date().toISOString()
-      }, "EMPLOYEE");
-      
-      logUserAction("employee_created", {
-        userId: userInfo.userId,
-        employeeId: response.data.employee?.id,
-        employeeEmail: employeeData.email
-      });
-      
+      return acc;
+    }, {});
+    delete formData.same_as_permanent
+      const response = await apiClient.employee.createEmployee(formData);
       return response.data;
     } catch (error) {
-      const errorMessage = handleApiError(error, "Create employee");
-      
-      logUserAction("create_employee_failed", {
-        userId: getUserInfoForLogging().userId,
-        employeeEmail: employeeData.email,
-        error: errorMessage
-      });
-      
+      const errorMessage = handleApiError(error.data, "Create employee");
+      console.log(errorMessage)
       return rejectWithValue(errorMessage);
     }
   }

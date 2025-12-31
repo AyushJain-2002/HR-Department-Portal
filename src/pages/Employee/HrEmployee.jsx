@@ -64,6 +64,12 @@ const HrEmployee = () => {
     ifsc_code: "",
     account_number: "",
     account_type: "",
+    total_experience: '', // optional for Fresher
+    company_name: '', // optional for Fresher
+    experience: '', // optional for Fresher
+    last_company_designation: '', // optional for Fresher
+    previous_ctc: '', // optional for Fresher
+    current_ctc: '', // optional for Freshe
     // nominee_name: "",
     // nominee_mobile_number: "",
     // nominee_relation: "",
@@ -114,7 +120,11 @@ const HrEmployee = () => {
   // 🟢 CHANGED: Handle create submission
   const handleSubmit = (formData) => {
     console.log(formData,"formdata before submit")
-    createEmployee(formData);
+    try {
+      {createEmployee(formData);}
+    } catch (error) {
+      console.log(error)
+    }
 
   };
 
@@ -140,7 +150,7 @@ const HrEmployee = () => {
         resetEmployee();
         resetCreateSuccess(); // 🟢 ADDED: Reset success state
         if (!isEditMode) {
-          navigate('/');
+          navigate('/master/hr/create-employee');
         }
       }, 5000);
       

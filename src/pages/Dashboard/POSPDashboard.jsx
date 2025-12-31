@@ -27,7 +27,7 @@ const POSPDashboard = () => {
     <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
       <div className="flex items-center">
         <img
-          src="https://www.notioninsurance.in/assets/images/header/logo.webp"
+          src="https://www.notioninsurance.in/assets/Images/header/logo.webp"
           alt="Notion Insurance Logo"
           className="h-20 w-auto"
         />

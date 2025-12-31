@@ -4,12 +4,9 @@ import {
   Select,
   Option,
 } from "@material-tailwind/react";
-// import { use, useSelector } from "react-redux";
-// import { fetchAllEmployees } from "../../../store/Actions/EmployeeAction";
-import ReusableTable from "../../TableActions/ReusableTable";
 import { ToastContainer } from "react-toastify";
 import { useEmployee } from "../../../hooks/hookIndex";
-
+import TableLayout from "../../TableActions/TableLayout"
 const EmployeeAccountReport = () => {
 
   const{fetchAllEmployees,loading, allEmployee}=useEmployee()
@@ -63,16 +60,27 @@ const EmployeeAccountReport = () => {
         </div>
       </div>
 
-      <ReusableTable
+      <TableLayout
         tableHeaders={columnKeys.map((col) => col.label)}
-        tableData={filteredData || []}
+        filteredData={filteredData || []}
         columnKeys={columnKeys}
         fileName="Employee Account Reports"
         idKey="id"
         loading={loading}
       />
 
-      <ToastContainer />
+      <ToastContainer 
+      className="mt-16" // Add margin top to push toasts down from header
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"/>
     </div>
   );
 };

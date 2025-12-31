@@ -168,8 +168,8 @@ export const registerPolicyReferBy = createAsyncThunk(
 );
 
 // 🔹 Get policy refer by by ID
-export const getPolicyReferByById = createAsyncThunk(
-  "policyReferBy/getPolicyReferByById",
+export const getPolicyReferById = createAsyncThunk(
+  "policyReferBy/getPolicyReferById",
   async (id, { rejectWithValue }) => {
     try {
       const userInfo = getUserInfoForLogging();
@@ -179,7 +179,7 @@ export const getPolicyReferByById = createAsyncThunk(
         referById: id
       });
       
-      const response = await apiClient.policyReferBy.getPolicyReferByById(id);
+      const response = await apiClient.policyReferBy.getPolicyReferById(id);
       
       Logger.info("Policy refer by fetched by ID successfully", {
         userId: userInfo.userId,
@@ -306,7 +306,7 @@ const policyReferBySlice = createSlice({
       state.updateError = null;
       state.toggleError = null;
     },
-    resetPolicyReferByById: (state) => {
+    resetPolicyReferById: (state) => {
       state.loading = false;
       state.createSuccess = false;
       state.createError = null;
@@ -343,7 +343,7 @@ const policyReferBySlice = createSlice({
     builder
       // 🔹 Fetch all policy refer by entries
       .addCase(fetchPolicyReferBy.pending, (state) => {
-        console.log("hii hello by")
+        // console.log("hii hello by")
         state.fetchLoading = true;
         state.loading = true;
         state.error = null;
@@ -352,20 +352,20 @@ const policyReferBySlice = createSlice({
         state.fetchSuccess = false;
       })
       .addCase(fetchPolicyReferBy.fulfilled, (state, action) => {
-        console.log("in slicer",action.payload)
+        // console.log("in slicer",action.payload)
         state.fetchLoading = false;
         state.loading = false;
         state.policyRefList = action.payload;
         state.fetchSuccess = true;
         state.fetchError = null;
         state.error = null;
-        console.log("Policy refer by entries fetched:", action.payload.length, "items");
+        // console.log("Policy refer by entries fetched:", action.payload.length, "items");
       })
       .addCase(fetchPolicyReferBy.rejected, (state, action) => {
         state.fetchLoading = false;
         state.loading = false;
         state.fetchError = action.payload;
-        console.error("Error fetching policy refer by entries:", action.payload);
+        // console.error("Error fetching policy refer by entries:", action.payload);
       })
       
       // 🔹 Register new policy refer by
@@ -385,7 +385,7 @@ const policyReferBySlice = createSlice({
         state.createError = null;
         state.editError = null;
         state.policyRefList.push(action.payload);
-        console.log("Policy refer by registered successfully:", action.payload);
+        // console.log("Policy refer by registered successfully:", action.payload);
       })
       .addCase(registerPolicyReferBy.rejected, (state, action) => {
         state.createLoading = false;
@@ -393,28 +393,28 @@ const policyReferBySlice = createSlice({
         state.createError = action.payload;
         state.createSuccess = false;
         state.editSuccess = false;
-        console.error("Error registering policy refer by:", action.payload);
+        // console.error("Error registering policy refer by:", action.payload);
       })
       
       // 🔹 Get policy refer by by ID
-      .addCase(getPolicyReferByById.pending, (state) => {
+      .addCase(getPolicyReferById.pending, (state) => {
         state.getByIdLoading = true;
         state.loading = true;
         state.error = null;
         state.policyRef = null;
       })
-      .addCase(getPolicyReferByById.fulfilled, (state, action) => {
+      .addCase(getPolicyReferById.fulfilled, (state, action) => {
         state.getByIdLoading = false;
         state.loading = false;
         state.policyRef = action.payload;
         state.error = null;
-        console.log("Policy refer by fetched by ID:", action.payload);
+        // console.log("Policy refer by fetched by ID:", action.payload);
       })
-      .addCase(getPolicyReferByById.rejected, (state, action) => {
+      .addCase(getPolicyReferById.rejected, (state, action) => {
         state.getByIdLoading = false;
         state.loading = false;
         state.error = action.payload;
-        console.error("Error fetching policy refer by by ID:", action.payload);
+        // console.error("Error fetching policy refer by by ID:", action.payload);
       })
       
       // 🔹 Update policy refer by
@@ -446,7 +446,7 @@ const policyReferBySlice = createSlice({
           state.policyRefList[index] = action.payload; // Directly replace the item
         }
         
-        console.log("Policy refer by updated successfully:", action.payload);
+        // console.log("Policy refer by updated successfully:", action.payload);
       })
       .addCase(updatePolicyReferBy.rejected, (state, action) => {
         state.updateLoading = false;
@@ -455,7 +455,7 @@ const policyReferBySlice = createSlice({
         state.editError = action.payload;
         state.createSuccess = false;
         state.editSuccess = false;
-        console.error("Error updating policy refer by:", action.payload);
+        // console.error("Error updating policy refer by:", action.payload);
       })
       
       // 🔹 Toggle policy refer by status
@@ -483,16 +483,16 @@ const policyReferBySlice = createSlice({
           );
         }
         
-        console.log("Policy refer by status toggled:", action.payload);
+        // console.log("Policy refer by status toggled:", action.payload);
       })
       .addCase(togglePolicyReferByStatus.rejected, (state, action) => {
         state.toggleLoading = false;
         state.loading = false;
         state.toggleError = action.payload;
-        console.error("Error toggling policy refer by status:", action.payload);
+        // console.error("Error toggling policy refer by status:", action.payload);
       });
   }, 
 });
 
-export const { clearError, resetPolicyReferByById, resetPolicyReferBy } = policyReferBySlice.actions;
+export const { clearError, resetPolicyReferById, resetPolicyReferBy } = policyReferBySlice.actions;
 export default policyReferBySlice.reducer;

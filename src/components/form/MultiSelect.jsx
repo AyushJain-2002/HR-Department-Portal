@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-
-
 const MultiSelect = ({
   label,
   options,
@@ -11,8 +9,7 @@ const MultiSelect = ({
   placeholder = "Select options",
 }) => {
   const isControlled = value !== undefined;
-  const [internalSelected, setInternalSelected] =
-    useState(defaultSelected);
+  const [internalSelected, setInternalSelected] =useState(defaultSelected);
   const selectedOptions = isControlled ? value : internalSelected;
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);

@@ -6,7 +6,7 @@ import {
   deleteAddon,
   clearError,
   resetAddonState
-} from "../store/NewReducers/AddonSlice";
+} from "../store/NewReducers/AddOnSlice";
 import { useLogger } from "./useLogger";
 
 export const useAddon = () => {

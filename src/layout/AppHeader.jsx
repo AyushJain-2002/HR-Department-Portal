@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
-import NotificationDropdown from "../components/header/NotificationDropdown";
-import UserDropdown from "../components/header/UserDropdown";
+import NotificationDropdown from "../components/Header/NotificationDropdown";
+import UserDropdown from "../components/Header/UserDropdown";
 import { useNavigate } from "react-router-dom"; // <-- import this
 
 
@@ -117,13 +117,17 @@ const AppHeader = () => {
           <Link to="/" className="lg:hidden">
             <img
               className="dark:hidden"
-              src="./images/logo/logo.svg"
+              src="./images/logo/logo.jpg"
               alt="Logo"
+              width={100}
+              // height={40}
             />
             <img
               className="hidden dark:block"
-              src="./images/logo/logo-dark.svg"
+              src="./images/logo/logo-dark.webp"
               alt="Logo"
+              width={100}
+              // height={60}
             />
           </Link>
 

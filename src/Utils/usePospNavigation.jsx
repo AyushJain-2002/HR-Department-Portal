@@ -1,19 +1,11 @@
 import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-// import { useDispatch, useSelector } from "react-redux";
-// import Cookies from "js-cookie";
 import { useAuth } from "../hooks/useAuth";
 import { fetchPospById } from "../store/NewReducers/authSlice";
-// import { fetchPospById } from "../../../../store/Actions/PospSignUpAction";
-// import { fetchPospById } from "../store/Actions/PospSignUpAction";
-// import { getDecryptedCookie } from "./secureCookie";
 const usePospNavigation = () => {
   const navigate = useNavigate();
-  // const dispatch = useDispatch();
-  // const { user, posp } = useSelector((state) => state.posp);
   const {authState} = useAuth();
-  // const userid = Cookies.get("userId");
-  const {user,posp,authToken} = authState;
+   const {user,posp,authToken} = authState;
   let userInfo=user;
   let userID=userInfo.id
   const currentUserData = useMemo(() => posp || user, [posp, user]);

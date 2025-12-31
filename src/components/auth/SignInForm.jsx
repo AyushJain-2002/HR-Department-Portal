@@ -1,3 +1,5 @@
+//src/components/auth/SignInForm.jsx
+
 import { useAuth } from "../../hooks/useAuth";
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
@@ -23,8 +25,6 @@ export default function Login() {
     const [forgotEmail, setForgotEmail] = useState("");
     const [forgotError, setForgotError] = useState("");
     const [verifyingEmail, setVerifyingEmail] = useState(false);
-  
-    const dispatch = useDispatch();
     const navigate = useNavigate();
 
   //  ---------------------------
@@ -80,15 +80,16 @@ export default function Login() {
       navigate("/");
     }
   };
-
   useEffect(() => {
-    if (authState.error || authState.loginError) {
-      // setLoading(false);
-      setErrorMsg("Error",authState.loginError || authState.error);
-    }
-    // else
-    //   setErrorMsg("Invalid email or password");
-  }, [authState.error]);
+    // setLoading(false);
+     const err =
+    authState.loginError?.error ||
+    authState.loginError ||
+    authState.error ||
+    "";
+    
+  setErrorMsg(err);
+  }, [authState.loginError,authState.error]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
@@ -98,7 +99,7 @@ export default function Login() {
       localStorage.removeItem("rememberedEmail");
     }
     login({email: email,password: password,})
-    // console.log(login({email: email,password: password,}))
+
   };
 
   
@@ -144,7 +145,7 @@ export default function Login() {
            </div>
 
            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
-               <button disabled className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+               <button disabled className="disabled:opacity-50 inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
                  <svg
                   width="20"
                   height="20"
@@ -171,7 +172,7 @@ export default function Login() {
                 </svg>
                 Sign in with Google
               </button>
-              <button disabled className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
+              <button disabled className="disabled:opacity-50 inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
                 <svg
                   width="21"
                   className="fill-current"

@@ -140,14 +140,14 @@ return{
                     label: "Aadhar Number",
                     type: "text",
                     placeholder: "Aadhar Number",
-                    required: false,
+                    required: true,
                 },
                 {
                     name: "pancard_number",
                     label: "Pancard Number",
                     type: "text",
                     placeholder: "Pancard Number",
-                    required: false,
+                    required: true,
                 },
                 {
                     name: "bank_name",
@@ -207,6 +207,12 @@ return{
                     storeLabel: true,
                     step: 3,
                 },
+                {
+                    name:"submit",
+                    label: "Submit",
+                    type:"button",
+                    className:"w-48 mx-[42%]  col-span-full"
+                }
             ]
         }
            // ],

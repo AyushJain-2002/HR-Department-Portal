@@ -2,7 +2,7 @@
 import {HttpClient} from '../../Utils/http-client.jsx';
 import { withRetry } from '../../Utils/retry';
 import ENDPOINTS from '../Endpoints';
-import { ErrorHandler } from '../../utils/error-handler';
+import { ErrorHandler } from '../../Utils/error-handler';
 import logger from '../Logger';
 
 export class InsurerService {

@@ -7,56 +7,27 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { toast, ToastContainer } from "react-toastify";
-// import FormDynamic from "../TableActions/FormDynamic";
-// import {
-//   fetchCities,
-//   fetchCitiesByState,
-//   fetchStates,
-// } from "../../store/Actions/StateAction";
 import { useEffect, useMemo, useState } from "react";
-// import { use, useSelector } from "react-redux";
-// import {
-//   createBranch,
-//   createBranchManager,
-//   deleteBranch,
-//   fetchBranchById,
-//   fetchBranches,
-//   updateBranch,
-// } from "../../store/Actions/BranchAction";
-// import { fetchRegions, fetchZones } from "../../store/Actions/ZoneAction";
 import Loading from "../Loading";
-// import {
-//   fetchDepartments,
-//   fetchDesignation,
-// } from "../../store/Actions/Department_Designation_Action";
 import TableLayout from "../TableActions/TableLayout";
 import { MdDeleteForever } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
-import { GrUserManager } from "react-icons/gr";
 import {addFields,editFields} from "./CreateBranchConfig";
 import DynamicForm from "../Tables/DynamicForm";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import Button from "../../components/ui/button/Button";
 import { useStateData,useDepartment,useBranch,useZones } from "../../hooks/hookIndex";
 const Branch = () => {
-  const [openModal, setOpenModal] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+  const [editModalOpen, setEditModalOpen] = useState(false); // Add separate state for edit modalz
+  const [editingBranch, setEditingBranch] = useState(null); // Track which branch is being edited
   const [editFormErrors, setEditFormErrors] = useState({});
   const { fetchStates, states = [], cities = { cities: [] } } =useStateData();
   const {fetchDepartments,fetchDesignation,departments, designations } =useDepartment();
   const {  createBranch,createBranchManager,deleteBranch,fetchBranchById,fetchBranches,updateBranch,
-    branches,createError,editError,editSuccess,branch,loading,success,error} = useBranch();
+    branches,createError,editError,editSuccess,fetchSuccess,currentBranch,loading,success,error} = useBranch();
   const {zones, region,fetchRegions, fetchZones} =useZones();
-  // const { 
-  //   branches,createError,editError,editSuccess,branch,loading,success,error,
-  // } = useSelector((state) => state.branches);
-  // const { states = [], cities = { cities: [] } } = useSelector(
-  //   (state) => state.states
-  // ); // Set default values for states and cities
-  // const { departments, designations } = useSelector(
-  //   (state) => state.departments
-  // );
-  // const { zones, region } = useSelector((state) => state.zones); // Set default values for states and cities
+  
   const [formData, setFormData] = useState({
     branch_code: "",
     branch_name: "",
@@ -94,240 +65,44 @@ const Branch = () => {
     { id: 2, title: "Mrs." },
     { id: 3, title: "Miss." },
   ];
-  // Handle state and city changes
-//   const handleFieldChange = (name, selected) => {
-//     // console.log(selected);
-//     // Check if the field belongs to the branch form or branch manager form
-//     if (addFields.some((field) => field.name === name)) {
-//       // If field is part of the branch form, update formData
-//       if (name === "state") {
-//         // When the state changes, reset the city field
-//         setFormData((prev) => ({
-//           ...prev,
-//           [name]: selected.label, // Set the selected state
-//           city: "", // Reset city field when state changes
-//         }));
-// console.log(name,selected)
-//         // Optionally, fetch cities again based on the selected state
-//         (fetchCitiesByState(selected.value));
-//       } else {
-//         setFormData((prev) => ({
-//           ...prev,
-//           [name]: selected.label,
-//         }));
-//       }
-//     } else if (addFieldsManager.some((field) => field.name === name)) {
-//       // If field is part of the branch manager form, update managerformData
-//       setmanagerformData((prev) => ({
-//         ...prev,
-//         [name]: selected.label,
-//       }));
-//     }
-//   };
-  //  const handleChange = (selectedOption, actionMeta) => {
-  //   // console.log("selectedOption with action meta",selectedOption,actionMeta)
-  //   if(actionMeta.errors){
-  //     console.log(actionMeta)
-  //     return;
-  //   }
-  //     console.log("he me yaha u")
-  //   const name = actionMeta?.name;
-  //   // console.log("selectedopt",selectedOption)
-  //   const value =selectedOption?.value || "";
-
-  //   // console.log(`value ${value} on name ${name}`)
-  //   setFormData((prev) => {
-  //     let updatedFormData = { ...prev, [name]: value };
-
-  //     if (name === "state") {
-  //       updatedFormData.city = "";
-  //       // updatedFormData[name] = selectedOption?.label; // Set state name as label
-  //       (fetchCitiesByState(value));
-  //     } else if (
-  //       name === "title" ||
-  //       name === "role" ||
-  //       name === "department" ||
-  //       name === "designation" ||
-  //       // name === "bank_name" ||
-  //       // name === "current_address_city" ||
-  //       // name === "permanent_address_city" ||
-  //       name === "city" 
-  //       // name === "bankname" ||
-  //       // name === "gender" ||
-  //       // name === "education_level" ||
-  //       // name === "account_type" ||
-  //       // name === "marital_status" ||
-  //       // name === "language" ||
-  //       // name === "branch_id"
-  //     ) {
-  //         updatedFormData[name]=selectedOption?.value;
-  //       }
-  //     return updatedFormData;
-  //   });
-  // };
   const handleEditBranch = (branchId) => {
     (fetchBranchById(branchId));
+     // Set the editing branch ID4
+    setEditingBranch(branchId);
   };
+  const handleProfile=(branchId)=>{
+    (fetchBranchById(branchId));
+  }
   useEffect(() => {
-    if (branch) {
+    if (currentBranch) {
       // Log the branch data and open the modal after the data is fetched
-      // console.log("Fetched Branch Data:", branch);
       setFormData({
-        branch_name: branch.branch_name,
-        branch_code: branch.branch_code,
-        broker_pancard_number: branch.broker_pancard_number,
-        branch_type: branch.branch_type,
-        state: branch.state,
-        city: branch.city,
-        zone: branch.zone,
-        region: branch.region,
-        gst_number: branch.gst_number,
-        address: branch.address,
-        landline_number: branch.landline_number,
-        mobile_number: branch.mobile_number,
-        comment: branch.comment || "", // Assuming comment can be null
+        branch_code: currentBranch.branch_code || "",
+        branch_name: currentBranch.branch_name || "",
+        broker_pancard_number: currentBranch.broker_pancard_number || "",
+        branch_type: currentBranch.branch_type || "",
+        state: currentBranch.state || "",
+        city: currentBranch.city || "",
+        zone: currentBranch.zone || "",
+        region: currentBranch.region || "",
+        gst_number: currentBranch.gst_number || "",
+        address: currentBranch.address || "",
+        landline_number: currentBranch.landline_number || "",
+        mobile_number: currentBranch.mobile_number || "",
+        comment: currentBranch.comment || "",
       });
-      setOpenModal(true);
+      setEditModalOpen(true); // Open edit modal instead of the create modal
     }
-  }, [branch]); 
-  const addConfig = addFields({
-  states,
-  cities,
-  zones,
-  region,
-  departments,
-  designations,
-  titles,
-  formData
-});
-// const editConfig=editFields(addFields(branches))
-const editConfig=editFields(formData,addFields(formData),{
-  states,
-  cities,
-  zones,
-  region,
-  departments,
-  designations,
-  titles,
-  formData
-})
-
-  // const addFields = useMemo(
-  //   () => [
-  //     {
-  //       name: "branch_name",
-  //       label: "Branch Name",
-  //       type: "text",
-  //       placeholder: "Enter branch name",
-  //       // required: true,
-  //     },
-  //     {
-  //       name: "state",
-  //       label: "State",
-  //       type: "select",
-  //       options: states.map((state) => ({
-  //         value: state.id,
-  //         label: state.state_name,
-  //       })),
-  //       placeholder: "Select a state",
-  //       // required: true,
-  //       storeLabel: true,
-  //     },
-  //     {
-  //       name: "city",
-  //       label: "City",
-  //       type: "select",
-  //       options: formData.state
-  //         ? (cities.cities || []).map((city) => ({
-  //             value: city.city_id,
-  //             label: city.city_name,
-  //           }))
-  //         : [],
-  //       placeholder: "Select a city",
-  //       // required: true,
-  //       storeLabel: true,
-  //     },
-  //     {
-  //       name: "address",
-  //       label: "Address",
-  //       type: "text",
-  //       placeholder: "Enter address",
-  //       // required: true,
-  //     },
-  //     {
-  //       name: "zone",
-  //       label: "Zone",
-  //       type: "select",
-  //       options: zones.map((zone) => ({
-  //         value: zone.id,
-  //         label: zone.zone_name,
-  //       })),
-  //       placeholder: "Select zone",
-  //       // required: true,
-  //       storeLabel: true,
-  //     },
-  //     {
-  //       name: "region",
-  //       label: "Region",
-  //       type: "select",
-  //       options: region.map((reg) => ({
-  //         value: reg.id,
-  //         label: reg.region_name,
-  //       })),
-  //       placeholder: "Select region",
-  //       // required: true,
-  //       storeLabel: true,
-  //     },
-  //     {
-  //       name: "landline_number",
-  //       label: "Landline Number",
-  //       type: "text",
-  //       placeholder: "Enter landline number",
-  //     },
-  //     {
-  //       name: "mobile_number",
-  //       label: "Mobile Number",
-  //       type: "text",
-  //       placeholder: "Enter mobile number",
-  //     },
-  //     {
-  //       name: "gst_number",
-  //       label: "GST Number",
-  //       type: "text",
-  //       placeholder: "Enter GST number",
-  //       // required: true,
-  //     },
-  //     {
-  //       name: "broker_pancard_number",
-  //       label: "Broker Pancard Number",
-  //       type: "text",
-  //       placeholder: "Enter broker pancard number",
-  //       // required: true,
-  //     },
-  //   ],
-  //   [states, cities, zones, region, formData.state]
-  // );
-  // const editFields = useMemo(
-  //   () => [
-  //     {
-  //       name: "branch_code",
-  //       label: "Branch Code",
-  //       type: "text",
-  //       placeholder: "Branch code",
-  //       readOnly: true, // Make branch_code field read-only
-  //     },
-  //     ...addFields, // Include all other fields from addFields
-  //   ],
-  //   [addFields]
-  // );
-  const handleSubmit = (formData) => {
-    console.log("Creating new branch");
+  }, [currentBranch,fetchSuccess]); 
+ const handleSubmit = (formData) => {
     (createBranch(formData));
-    setOpenModal(false); 
   };
 
+  // Handle update branch submission
   const handleUpdateBranch = (formData) => {
-    (updateBranch(branch.id, formData));
+    if (editingBranch) {
+      updateBranch(editingBranch, formData);
+    }
   };
   useEffect(() => {
     if (editError) {
@@ -336,7 +111,7 @@ const editConfig=editFields(formData,addFields(formData),{
       toast.error("Please fix the errors and try again.");
     } else if (createError) {
       setFormErrors(createError.message || {});
-      if (formErrors) setOpenModal(false);
+      // if (formErrors)
       setEditFormErrors({});
       // Handle validation errors
       toast.error("Please fix the errors for and try again.");
@@ -344,7 +119,6 @@ const editConfig=editFields(formData,addFields(formData),{
       toast.error(error);
     } else if (success) {
       toast.success("Branch created successfully!");
-      setOpenModal(false);
       setFormData({
         branch_code: "",
         branch_name: "",
@@ -370,8 +144,10 @@ const editConfig=editFields(formData,addFields(formData),{
       setFormErrors({});
       (fetchBranches());
     } else if (editSuccess) {
-      toast.success("Branch update successfully!");
-      setOpenModal(false);
+      toast.success("Branch updated successfully!");
+      setEditModalOpen(false); // Close edit modal
+      // Reset editing state
+      setEditingBranch(null);
       setFormData({
         branch_code: "",
         branch_name: "",
@@ -387,68 +163,8 @@ const editConfig=editFields(formData,addFields(formData),{
       });
       (fetchBranches());
     }
-  }, [createError, editError, editSuccess, success, ]);
+  }, [createError, editError, editSuccess, success,error ]);
 
-  const addFieldsManager = useMemo(
-    () => [
-      {
-        name: "title",
-        label: "Title",
-        type: "select",
-        options: titles.map((tit) => ({
-          value: tit.id,
-          label: tit.title,
-        })),
-        placeholder: "Select a Title",
-        // required: true,
-        storeLabel: true,
-      },
-      {
-        name: "branch_manager_name",
-        label: "Branch Manager Name",
-        type: "text",
-        placeholder: "Enter branch name",
-        // required: true,
-      },
-      {
-        name: "department",
-        label: "Department",
-        type: "select",
-        options:
-          departments?.map((dep) => ({
-            value: dep.id,
-            label: dep.department_name,
-          })) || [],
-        placeholder: "Select Department",
-        storeLabel: true,
-      },
-      {
-        name: "designation",
-        label: "Designation",
-        type: "select",
-        options:
-          designations?.map((des) => ({
-            value: des.id,
-            label: des.designation_name,
-          })) || [],
-        placeholder: "Select Designation",
-        storeLabel: true,
-      },
-      {
-        name: "branch_manager_email",
-        label: "E-mail",
-        type: "text",
-        placeholder: "Enter Email ID",
-      },
-      {
-        name: "branch_manager_mobile_number",
-        label: "Mobile Number",
-        type: "text",
-        placeholder: "Enter mobile number",
-      },
-    ],
-    [departments, titles, designations]
-  );
   const columnKeys = [
     { key: "sno", label: "S NO" },
     { key: "branch_code", label: "Branch Code" },
@@ -464,8 +180,6 @@ const editConfig=editFields(formData,addFields(formData),{
                 size="sm"
                 variant="outline"
                 onClick={() => handleDelete(row.id)}
-                // disabled={deletingCityId === row.id}
-                // className="text-red-600 border-red-600 hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900/20 transition-colors duration-200"
               >
                 {/* {deletingCityId === row.city_id ? "Deleting..." : "Delete"} */}<MdDeleteForever className="text-2xl text-red-800" />
               </Button>
@@ -473,19 +187,8 @@ const editConfig=editFields(formData,addFields(formData),{
                 size="sm"
                 variant="outline"
                 onClick={() => handleEditBranch(row.id)}
-                // disabled={deletingCityId === row.id}
-                // className="text-red-600 p-0 border-none border-red-600 hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900/20 transition-colors duration-200"
               >
                 {/* {deletingCityId === row.city_id ? "Deleting..." : "Delete"} */}<FaRegEdit className="text-2xl text-blue-600" />
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleDelete(row.id)}
-                // disabled={deletingCityId === row.id}
-                // className="text-red-600 border-red-600 hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900/20 transition-colors duration-200"
-              >
-                {/* {deletingCityId === row.city_id ? "Deleting..." : "Delete"} */}<GrUserManager className="text-2xl text-green-700"  />
               </Button>
             </div>
           )
@@ -501,7 +204,7 @@ const editConfig=editFields(formData,addFields(formData),{
             onClick={() => {
               (deleteBranch(branchID)); // Delete city action
               toast.dismiss(toastId); // Dismiss toast
-              toast.success("City deleted successfully!");
+              toast.success("Branch deleted successfully!");
             }}
           >
             OK
@@ -536,7 +239,7 @@ const editConfig=editFields(formData,addFields(formData),{
       <Card className=" mb-5  p-5 shadow-lg rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] ">
         <DynamicForm
           config={addFields(formData)}
-          otherFields={addFieldsManager}
+          // otherFields={addFieldsManager}
           onSubmit={handleSubmit}
           // onChange={handleChange}
           otherHead="Branch Contact Person"
@@ -552,37 +255,54 @@ const editConfig=editFields(formData,addFields(formData),{
         filteredData={branches}
         handleDelete={handleDelete}
         columns={columnKeys}
-        // fileName="Branch"
-        // idKey="id"
+        fileName="Branch"
+        idKey="id"
         enableSearch={true}
         enableExcel={true}
+        // handleToggle={handleToggle}
         handleEditBranch={handleEditBranch}
         loading={loading}
       />
+       {/* Create Branch Dialog (if you still need it for some reason) */}
+
+        {/* Edit Branch Dialog */}
       <Dialog
         size="lg"
-        open={openModal}
+        open={editModalOpen}
         handler={() => {
-          setOpenModal(false); 
+          setEditModalOpen(false);
+          setEditingBranch(null);
           setEditFormErrors({});
         }}
       >
         <DialogHeader className="pb-0">Edit Branch</DialogHeader>
         <DialogBody className="pt-0">
           <DynamicForm
-            config={editConfig}
+            config={editFields(formData)}
             onSubmit={handleUpdateBranch}
-            // onChange={handleChange}
-            // storeLabel={true}
-            idKey="id"
             initialValues={formData}
             isEditMode={true}
             errors={editFormErrors}
+            success={success}
+            // containsButton={false}
+            resetValue={formData}
           />
         </DialogBody>
       </Dialog>
-
-      <ToastContainer />
+      
+      <ToastContainer 
+      className="mt-16" // Add margin top to push toasts down from header
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light" 
+      />
     </div>
   );
 };

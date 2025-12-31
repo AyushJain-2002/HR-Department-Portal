@@ -1,4 +1,4 @@
-// slices/authSlice.js
+//src/store/NewReducers/authSlice.js
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { apiClient } from '../../api/apiClient';
 import {getDecryptedCookie, setEncryptedCookie} from "../../Utils/secureCookie"
@@ -55,79 +55,39 @@ const getUserInfoForLogging = () => {
 // Helper function to handle API errors
 const handleApiError = (error, action) => {
   let errorMessage = "Something went wrong";
-  
-  if (error.response?.data?.message) {
-    errorMessage = error.response.data.message;
-  } else if (error.response?.data?.errors?.email) {
-    errorMessage = error.response.data.errors.email[0];
-  } else if (error.message) {
-    errorMessage = error.message;
-  }
+  errorMessage=error;
+  // if (error.response?.data?.message) {
+  //   errorMessage = error.response.data.message;
+  // } else if (error.response?.data?.errors?.email) {
+  //   errorMessage = error.response.data.errors.email[0];
+  // } else if (error.message) {
+  //   errorMessage = error.message;
+  // }
     // Log error with user context
-  const userInfo = getUserInfoForLogging();
-  // Logger.error(`${action} failed`, {
-  //   error: errorMessage,
-  //   // userId: userInfo.userId,
-  //   email: userInfo.email,
-  //   fullError: error.response?.data || error.message,
-  // }, "API_ERROR");
-  
+  const userInfo = getUserInfoForLogging();  
   return errorMessage;
 }
 // Helper function to log user actions
 const logUserAction = (action, details = {}) => {
   const userInfo = getUserInfoForLogging();
-  const logDetails = {
-    ...userInfo,
-    ...details,
-    page: window.location.pathname,
-    timestamp: new Date().toISOString()
-  };
-  // Logger.info(`User Action: ${action}`, logDetails, "USER_ACTION");
 };
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (data, { rejectWithValue }) => {
     try {
-      // // Enhanced login attempt logging
-      // Logger.info("Login attempt", { 
-      //   email: data.email,
-      //   timestamp: new Date().toISOString(),
-      //   ipAddress: window.clientIP || 'unknown',
-      //   userAgent: navigator.userAgent?.substring(0, 100)
-      // }, "AUTH");
-      logUserAction("login_attempt", { email: data.email });
-
-      // console.log("data",data)
       const res = await apiClient.auth.login(data);
-      // console.log("Response in authslice",res.data.token)
+      console.log("token in slice",res)
       const token = res.data?.token;
       const user = res.data?.user;
-      // console.log("authsliece",token,user)
       if (token) {
         await apiClient.setAuthData(token, user);
-        // Logger.info("Login successful", { 
-        //           userId: res.data.user?.id,
-        //           email: data.email,
-        //           timestamp: new Date().toISOString(),
-        //           userRole: res.data.user?.role,
-        //           loginTime: new Date().toLocaleString()
-        //         }, "AUTH");
-                
-                logUserAction("login_success", { 
-                  userId: user?.id
-                });
       }
 
       return res.data;
     } catch (err) {
-      const errorMessage = handleApiError(err, "Login");
-      
+      const errorMessage = handleApiError(err?.data, "Login");
       // Log failed login attempt
-      logUserAction("login_failed", { 
-        email: data.email,
-        error: errorMessage
-      });
+      
       return rejectWithValue(errorMessage);
     }
   }
@@ -138,43 +98,12 @@ export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (userData, { rejectWithValue }) => {
     try {
-      // // Log registration attempt
-      // Logger.info("Registration attempt", { 
-      //   email: userData.email,
-      //   name: userData.name,
-      //   timestamp: new Date().toISOString()
-      // }, "AUTH");
-      
-      logUserAction("registration_attempt", { 
-        email: userData.email,
-        name: userData.name 
-      });
-      
-      // const response = await apiClient.auth.post("/posp/register", userData);
       const response = await apiClient.auth.register(userData);
       // Enhanced registration logging
-      Logger.info("User registered successfully", { 
-        email: userData.email,
-        message: response.data.message,
-        registrationTime: new Date().toISOString(),
-        userId: response.data.user?.id
-      }, "AUTH");
-      
-      logUserAction("registration_success", { 
-        email: userData.email,
-        userId: response.data.user?.id
-      });
       
       return response.data;
     } catch (error) {
-      const errorMessage = handleApiError(error, "Signup");
-      
-      // Log failed registration
-      logUserAction("registration_failed", { 
-        email: userData.email,
-        error: errorMessage
-      });
-      
+      const errorMessage = handleApiError(error, "Signup");      
       return rejectWithValue(errorMessage);
     }
   }
@@ -187,39 +116,15 @@ export const resendEmailVerification = createAsyncThunk(
     try {
       let userInfo = getUserInfoForLogging();
       let email = userInfo.email;
-      
-      // Log resend attempt
-      Logger.info("Resend email verification", { 
-        email,
-        timestamp: new Date().toISOString(),
-        userId: userInfo.id
-      }, "AUTH");
-      
-      logUserAction("resend_verification_email", { email });
-      
       const response = await apiClient.auth.verifyEmail({ token });
       
       if (response.data.message) {
-        // Log successful resend
-        Logger.info("Email verification resent successfully", { 
-          email,
-          timestamp: new Date().toISOString()
-        }, "AUTH");
-        
-        logUserAction("verification_email_resent", { email });
-        
         return { success: true, message: response.data.message };
       }
       
       throw new Error("Unexpected response");
     } catch (error) {
       const errorMessage = handleApiError(error, "Resend email");
-      
-      // Log failed resend
-      logUserAction("verification_email_resend_failed", { 
-        email: getUserInfoForLogging()?.email,
-        error: errorMessage
-      });
       return rejectWithValue(errorMessage);
     }
   }
@@ -245,21 +150,6 @@ export const verifyUserDocument = createAsyncThunk(
       const documentTypes = Object.keys(formDataObj)
         .filter(k => k.includes('document') || k.includes('file'))
         .join(', ');
-        
-      Logger.info("Document verification submission", { 
-        pospId,
-        userId: userInfo.userId,
-        documentTypes,
-        timestamp: new Date().toISOString(),
-        fileCount: Object.keys(formDataObj).length
-      }, "DOCUMENT");
-      
-      logUserAction("document_submission", { 
-        pospId,
-        documentTypes,
-        fileCount: Object.keys(formDataObj).length
-      });
-      
       const formData = new FormData();
       Object.keys(formDataObj).forEach((key) => {
         formData.append(key, formDataObj[key]);
@@ -267,7 +157,7 @@ export const verifyUserDocument = createAsyncThunk(
       formData.append("_method", "PUT");
       
       const response = await apiClient.auth.verifyDocuments(
-        `/posp/update/documents/${pospId}`,
+        `/Posp/update/documents/${pospId}`,
         formData,
         {
           headers: {
@@ -275,27 +165,10 @@ export const verifyUserDocument = createAsyncThunk(
           },
         }
       );
-      
-      // Log successful document submission
-      Logger.info("Document verification submitted successfully", { 
-        pospId,
-        userId: userInfo.userId,
-        timestamp: new Date().toISOString(),
-        responseStatus: response.status
-      }, "DOCUMENT");
-      
-      logUserAction("document_submission_success", { pospId });
-      
       return response.data;
     } catch (error) {
       const errorMessage = handleApiError(error, "Document verification");
-      
-      // Log failed document submission
-      logUserAction("document_submission_failed", { 
-        pospId: pospId,
-        error: errorMessage
-      });
-      
+
       return rejectWithValue({
         error: errorMessage,
         createError: error.response?.data,
@@ -311,41 +184,18 @@ export const fetchPospById = createAsyncThunk(
     try {
       const userInfo = getUserInfoForLogging();
       
-      // Log fetch attempt
-      Logger.info("Fetch POSP data", { 
-        pospId: id,
-        requestedBy: userInfo.userId,
-        timestamp: new Date().toISOString()
-      }, "DATA_ACCESS");
-      
-      logUserAction("fetch_posp_data", { pospId: id });
-      
-      const response = await apiClient.get(`/posp/getPospDataByID/${id}`);
+     
+      const response = await apiClient.get(`/Posp/getPospDataByID/${id}`);
       
       const mergedData = {
         ...response.data.user,
         ...response.data.images,
       };
       
-      // Log successful fetch
-      Logger.info("POSP data fetched successfully", { 
-        pospId: id,
-        userId: mergedData.id,
-        email: mergedData.email,
-        dataSize: JSON.stringify(mergedData).length
-      }, "DATA_ACCESS");
-      
-      logUserAction("posp_data_fetched", { pospId: id });
-      
+     
       return mergedData;
     } catch (error) {
       const errorMessage = handleApiError(error, "Fetch POSP by ID");
-      
-      // Log failed fetch
-      logUserAction("posb_data_fetch_failed", { 
-        pospId: id,
-        error: errorMessage
-      });
       
       return rejectWithValue(errorMessage);
     }
@@ -362,19 +212,9 @@ export const fetchTrainingSeconds = createAsyncThunk(
       // Log training fetch
       logUserAction("fetch_training_hours", { userId: userInfo.userId });
       
-      const response = await apiClient.get(`/posp/get_training`);
+      const response = await apiClient.get(`/Posp/get_training`);
       
-      // Log successful training fetch
-      Logger.info("Training hours fetched", { 
-        userId: userInfo.userId,
-        seconds: response.data?.training_seconds,
-        timestamp: new Date().toISOString()
-      }, "TRAINING");
       
-      logUserAction("training_hours_fetched", { 
-        userId: userInfo.userId,
-        seconds: response.data?.training_seconds
-      });
       
       return response.data;
     } catch (error) {
@@ -397,46 +237,21 @@ export const updateTrainingSeconds = createAsyncThunk(
   async (trainingSeconds, { rejectWithValue }) => {
     try {
       const userInfo = getUserInfoForLogging();
-      
-      // Log training update attempt
-      Logger.info("Update training hours attempt", { 
-        userId: userInfo.userId,
-        newSeconds: trainingSeconds,
-        timestamp: new Date().toISOString()
-      }, "TRAINING");
-      
-      logUserAction("update_training_hours", { 
-        userId: userInfo.userId,
-        seconds: trainingSeconds
-      });
+   
       
       const response = await apiClient.put(
-        `/posp/updateTrainingHours`,
+        `/Posp/updateTrainingHours`,
         { training_seconds: trainingSeconds }
       );
       
       // Enhanced training update logging
-      Logger.info("Training hours updated successfully", { 
-        userId: userInfo.userId,
-        seconds: trainingSeconds,
-        timestamp: new Date().toISOString(),
-        responseStatus: response.status
-      }, "TRAINING");
-      
-      logUserAction("training_hours_updated", { 
-        userId: userInfo.userId,
-        seconds: trainingSeconds
-      });
+     
       
       return response.data;
     } catch (error) {
       const errorMessage = handleApiError(error, "Update training hours");
       
-      // Log failed training update
-      logUserAction("training_hours_update_failed", { 
-        userId: getUserInfoForLogging().userId,
-        error: errorMessage
-      });
+    
       
       return rejectWithValue(errorMessage);
     }
@@ -460,18 +275,7 @@ export const fetchExamQuestions = createAsyncThunk(
       
       const response = await apiClient.auth.get(endpoints.POSP.GET_EXAM_QUESTIONS);
       
-      // Log successful exam fetch
-      Logger.info("Exam questions fetched successfully", { 
-        userId: userInfo.userId,
-        questionCount: response.data.questions?.length,
-        timestamp: new Date().toISOString()
-      }, "EXAM");
-      
-      logUserAction("exam_questions_fetched", { 
-        userId: userInfo.userId,
-        count: response.data.questions?.length
-      });
-      
+    
       // Store in session storage
       sessionStorage.setItem(
         "examQuestions",
@@ -482,12 +286,7 @@ export const fetchExamQuestions = createAsyncThunk(
     } catch (error) {
       const errorMessage = handleApiError(error, "Fetch exam questions");
       
-      // Log failed exam fetch
-      logUserAction("exam_questions_fetch_failed", { 
-        userId: getUserInfoForLogging().userId,
-        error: errorMessage
-      });
-      
+     
       return rejectWithValue(errorMessage);
     }
   }
@@ -499,19 +298,7 @@ export const submitExamResponses = createAsyncThunk(
   async (examData, { rejectWithValue }) => {
     try {
       const userId = examData.user_id || 'unknown';
-      
-      // Log exam submission attempt
-      Logger.info("Exam submission attempt", { 
-        userId,
-        questionCount: examData.responses?.length,
-        timestamp: new Date().toISOString(),
-        examType: examData.exam_type || 'unknown'
-      }, "EXAM");
-      
-      logUserAction("exam_submission", { 
-        userId,
-        questionCount: examData.responses?.length
-      });
+   
       
       const response = await apiClient.post(
         endpoints.POSP.SUBMIT_EXAM,
@@ -523,21 +310,6 @@ export const submitExamResponses = createAsyncThunk(
         }
       );
       
-      // Log successful exam submission
-      Logger.info("Exam submitted successfully", { 
-        userId,
-        questionCount: examData.responses?.length,
-        timestamp: new Date().toISOString(),
-        score: response.data.score,
-        result: response.data.result,
-        submissionId: response.data.submission_id
-      }, "EXAM");
-      
-      logUserAction("exam_submission_success", { 
-        userId,
-        score: response.data.score,
-        result: response.data.result
-      });
       
       // Clear session storage
       sessionStorage.removeItem("examQuestions");
@@ -565,16 +337,7 @@ export const fetchAllPospData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const userInfo = getUserInfoForLogging();
-      
-      // Log all POSP data fetch
-      Logger.info("Fetch all POSP data", { 
-        requestedBy: userInfo.userId,
-        timestamp: new Date().toISOString(),
-        userRole: userInfo.role
-      }, "DATA_ACCESS");
-      
-      logUserAction("fetch_all_posp_data", { userId: userInfo.userId });
-      
+    
       const response = await apiClient.get(ENDPOINTS.POSP.GET_ALL_POSP);
       
       const mergedData = response.data.map((item) => ({
@@ -583,19 +346,7 @@ export const fetchAllPospData = createAsyncThunk(
         posp_reporting_manager: item.user.posp_reporting_manager,
       }));
       
-      // Log successful data fetch
-      Logger.info("All POSP data fetched successfully", { 
-        requestedBy: userInfo.userId,
-        recordCount: mergedData.length,
-        timestamp: new Date().toISOString(),
-        dataSize: JSON.stringify(mergedData).length
-      }, "DATA_ACCESS");
-      
-      logUserAction("all_posp_data_fetched", { 
-        userId: userInfo.userId,
-        count: mergedData.length
-      });
-      
+   
       return mergedData;
     } catch (error) {
       const errorMessage = handleApiError(error, "Fetch all POSP data");
@@ -619,18 +370,7 @@ export const updateDocumentsAction = createAsyncThunk(
     try {
       const userInfo = getUserInfoForLogging();
       
-      // Log documents update
-      logger.info("Update documents (HR action)", { 
-        pospId: id,
-        updatedBy: userInfo.userId,
-        timestamp: new Date().toISOString(),
-        userRole: userInfo.role
-      }, "HR_ACTION");
-      
-      logUserAction("hr_update_documents", { 
-        pospId: id,
-        userId: userInfo.userId
-      });
+   
       
       const response = await apiClient.put(
         `${endpoints.POSP.HR_UPDATE_DOCUMENTS}/${id}`,
@@ -642,15 +382,6 @@ export const updateDocumentsAction = createAsyncThunk(
         }
       );
       
-      // Log successful documents update
-      logger.info("Documents updated successfully (HR)", { 
-        pospId: id,
-        updatedBy: userInfo.userId,
-        timestamp: new Date().toISOString(),
-        responseStatus: response.status
-      }, "HR_ACTION");
-      
-      logUserAction("hr_documents_update_success", { pospId: id });
       
       return response.data;
     } catch (error) {
@@ -672,26 +403,9 @@ export const verifyEmail = createAsyncThunk(
   "posp/verifyEmail",
   async (email, { rejectWithValue }) => {
     try {
-      // Log password reset request
-      logger.info("Password reset requested", { 
-        email,
-        timestamp: new Date().toISOString(),
-        ipAddress: window.clientIP || 'unknown'
-      }, "AUTH");
-      
-      logUserAction("password_reset_request", { email });
-      
+   
       const response = await apiClient.post(endpoints.AUTH.FORGOT_PASSWORD, { email });
-      
-      // Log OTP sent
-      logger.info("OTP sent for password reset", { 
-        email,
-        timestamp: new Date().toISOString(),
-        deliveryStatus: "sent"
-      }, "AUTH");
-      
-      logUserAction("otp_sent", { email });
-      
+    
       if (response.data.message === "OTP sent successfully to your email.") {
         return { success: true, message: response.data.message };
       }
@@ -700,11 +414,7 @@ export const verifyEmail = createAsyncThunk(
     } catch (error) {
       const errorMessage = handleApiError(error, "Verify email");
       
-      // Log failed password reset request
-      logUserAction("password_reset_request_failed", { 
-        email,
-        error: errorMessage
-      });
+    
       
       return rejectWithValue(errorMessage);
     }
@@ -716,15 +426,7 @@ export const resetPassword = createAsyncThunk(
   "posp/resetPassword",
   async ({ email, otp, password, password_confirmation }, { rejectWithValue }) => {
     try {
-      // Log password reset attempt
-      logger.info("Password reset attempt", { 
-        email,
-        timestamp: new Date().toISOString(),
-        otpLength: otp?.toString().length || 0
-      }, "AUTH");
-      
-      logUserAction("password_reset_attempt", { email });
-      
+   
       const response = await apiClient.post(endpoints.AUTH.RESET_PASSWORD, {
         email,
         otp: parseInt(otp, 10),
@@ -732,25 +434,11 @@ export const resetPassword = createAsyncThunk(
         password_confirmation,
       });
       
-      // Log successful password reset
-      logger.info("Password reset successful", { 
-        email,
-        timestamp: new Date().toISOString(),
-        resetTime: new Date().toLocaleString()
-      }, "AUTH");
-      
-      logUserAction("password_reset_success", { email });
-      
+     
       return response.data;
     } catch (error) {
       const errorMessage = handleApiError(error, "Reset password");
-      
-      // Log failed password reset
-      logUserAction("password_reset_failed", { 
-        email,
-        error: errorMessage
-      });
-      
+ 
       return rejectWithValue(errorMessage);
     }
   }
@@ -762,20 +450,7 @@ export const togglePospStatus = createAsyncThunk(
   async (pospId, { rejectWithValue }) => {
     try {
       const userInfo = getUserInfoForLogging();
-      
-      // Log status toggle attempt
-      logger.info("Toggle POSP status attempt", { 
-        pospId,
-        updatedBy: userInfo.userId,
-        timestamp: new Date().toISOString(),
-        userRole: userInfo.role
-      }, "HR_ACTION");
-      
-      logUserAction("toggle_posp_status", { 
-        pospId,
-        userId: userInfo.userId
-      });
-      
+  
       const response = await apiClient.put(
         `${endpoints.POSP.TOGGLE_ACTIVE}/${pospId}`,
         {},
@@ -785,19 +460,7 @@ export const togglePospStatus = createAsyncThunk(
           },
         }
       );
-      
-      // Log status toggle success
-      logger.info("POSP status toggled successfully", { 
-        pospId, 
-        active: response.data.active,
-        updatedBy: userInfo.userId,
-        timestamp: new Date().toISOString()
-      }, "HR_ACTION");
-      
-      logUserAction("posp_status_toggled", { 
-        pospId, 
-        active: response.data.active
-      });
+  
       
       if (response.data.message) {
         return {
@@ -809,13 +472,7 @@ export const togglePospStatus = createAsyncThunk(
       }
     } catch (error) {
       const errorMessage = handleApiError(error, "Toggle POSP status");
-      
-      // Log failed status toggle
-      logUserAction("toggle_posp_status_failed", { 
-        pospId,
-        error: errorMessage
-      });
-      
+     
       return rejectWithValue(errorMessage);
     }
   }
@@ -827,21 +484,7 @@ export const sendEmailToPosp = createAsyncThunk(
   async (emailData, { rejectWithValue }) => {
     try {
       const userInfo = getUserInfoForLogging();
-      
-      // Log email sending attempt
-      logger.info("Send email to POSP attempt", { 
-        to: emailData.email,
-        subject: emailData.subject,
-        sentBy: userInfo.userId,
-        timestamp: new Date().toISOString(),
-        userRole: userInfo.role
-      }, "HR_ACTION");
-      
-      logUserAction("send_email_to_posp", { 
-        to: emailData.email,
-        subject: emailData.subject
-      });
-      
+    
       const response = await apiClient.post(
         endpoints.POSP.SEND_EMAIL,
         emailData,
@@ -849,31 +492,11 @@ export const sendEmailToPosp = createAsyncThunk(
           headers: { "Content-Type": "application/json" },
         }
       );
-      
-      // Log email sent success
-      logger.info("Email sent to POSP successfully", { 
-        to: emailData.email,
-        subject: emailData.subject,
-        sentBy: userInfo.userId,
-        timestamp: new Date().toISOString(),
-        responseStatus: response.status
-      }, "HR_ACTION");
-      
-      logUserAction("email_sent_to_posp", { 
-        to: emailData.email,
-        subject: emailData.subject
-      });
+   
       
       return response.data;
     } catch (error) {
       const errorMessage = handleApiError(error, "Send email to POSP");
-      
-      // Log failed email sending
-      logUserAction("send_email_to_posp_failed", { 
-        to: emailData.email,
-        error: errorMessage
-      });
-      
       return rejectWithValue(errorMessage);
     }
   }
@@ -885,12 +508,7 @@ export const toggleDocumentsVerification = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const userInfo = getUserInfoForLogging();
-      
-      // Log document verification toggle
-      logUserAction("toggle_documents_verification", { 
-        pospId: id,
-        userId: userInfo.userId
-      });
+     
       
       const response = await apiClient.put(
         `${endpoints.POSP.TOGGLE_DOCS_VERIFICATION}/${id}`,
@@ -901,23 +519,11 @@ export const toggleDocumentsVerification = createAsyncThunk(
           },
         }
       );
-      
-      // Log document verification toggle success
-      logUserAction("documents_verification_toggled", { 
-        pospId: id,
-        status: response.data.status
-      });
-      
+  
       return response.data;
     } catch (error) {
       const errorMessage = handleApiError(error, "Toggle documents verification");
-      
-      // Log failed document verification toggle
-      logUserAction("toggle_documents_verification_failed", { 
-        pospId: id,
-        error: errorMessage
-      });
-      
+     
       return rejectWithValue(errorMessage);
     }
   }
@@ -929,13 +535,7 @@ export const toggleCanUpdateDocuments = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const userInfo = getUserInfoForLogging();
-      
-      // Log update documents permission toggle
-      logUserAction("toggle_update_documents_permission", { 
-        pospId: id,
-        userId: userInfo.userId
-      });
-      
+    
       const response = await apiClient.put(
         `${endpoints.POSP.TOGGLE_UPDATE_DOCS}/${id}`,
         {},
@@ -956,11 +556,7 @@ export const toggleCanUpdateDocuments = createAsyncThunk(
     } catch (error) {
       const errorMessage = handleApiError(error, "Toggle update documents");
       
-      // Log failed permission toggle
-      logUserAction("toggle_update_documents_permission_failed", { 
-        pospId: id,
-        error: errorMessage
-      });
+    
       
       return rejectWithValue(errorMessage);
     }
@@ -1077,20 +673,20 @@ const authSlice = createSlice({
           state.isAuthenticated = true;
           state.authToken = token;
           state.user = user;
+          setEncryptedCookie("user", {
+            id: action.payload.user?.id,
+            email: action.payload.user?.email,
+            branch_id: action.payload.user?.branch_id,
+            login_email: action.payload.user?.login_email,
+            personal_email: action.payload.user?.personal_email,
+            email_verification: action.payload.email_verification,
+            documents_verification: action.payload.documents_verification,
+            training_seconds: action.payload.training_seconds,
+            can_exam: action.payload.can_exam,
+            exam: action.payload.exam,
+            role: action.payload.user?.role,
+          });
         }
-        setEncryptedCookie("user", {
-          id: action.payload.user?.id,
-          email: action.payload.user?.email,
-          branch_id: action.payload.user?.branch_id,
-          login_email: action.payload.user?.login_email,
-          personal_email: action.payload.user?.personal_email,
-          email_verification: action.payload.email_verification,
-          documents_verification: action.payload.documents_verification,
-          training_seconds: action.payload.training_seconds,
-          can_exam: action.payload.can_exam,
-          exam: action.payload.exam,
-          role: action.payload.user?.role,
-        });
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;

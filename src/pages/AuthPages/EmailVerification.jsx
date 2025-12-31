@@ -1,15 +1,14 @@
 import  { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import {useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { resendEmailVerification } from "../../store/Actions/PospSignUpAction";
-import { logout } from "../../store/Reducers/PospSignUpInSlice";
-import Loading from "../../Pages/Loading";
+import Loading from "../../pages/Loading";
 import usePospNavigation from "../../Utils/usePospNavigation";
+import {useAuth} from "../../hooks/hookIndex"
 
 const EmailVerification = ({ email }) => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const {resendEmailVerification,logout}=useAuth();
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
@@ -18,11 +17,11 @@ const EmailVerification = ({ email }) => {
   // Use custom hook for auth and navigation logic
   usePospNavigation();
 
-  const handleResendEmail = async () => {
+  const handleResendEmail =() => {
     setIsResendDisabled(true);
     setCountdown(60); // 60 seconds cooldown
     
-    const result = await dispatch(resendEmailVerification());
+    const result = (resendEmailVerification());
     
     if (result?.success) {
       toast.success(result.message || "Verification email sent successfully!", {
@@ -42,7 +41,7 @@ const EmailVerification = ({ email }) => {
 
   // Handle logout
   const handleLogout = () => {
-    dispatch(logout());
+    (logout());
     localStorage.removeItem("elapsedTime");
     navigate("/login");
   };
@@ -65,7 +64,7 @@ const EmailVerification = ({ email }) => {
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center">
             <img
-              src="https://www.notioninsurance.in/assets/images/header/logo.webp"
+              src="https://www.notioninsurance.in/assets/Images/header/logo.webp"
               alt="Notion Insurance Logo"
               className="h-20 w-auto"
             />

@@ -15,7 +15,7 @@ const TrainingInstruction = () => {
           <CardBody>
             <div className="mb-6">
               <img
-                src="/assets/images/logo.webp"
+                src="/assets/Images/logo.webp"
                 alt="Company Logo"
                 className="h-32"
               />

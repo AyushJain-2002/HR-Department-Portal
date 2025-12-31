@@ -18,7 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../../store/Reducers/PospSignUpInSlice";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import MainContent from "./MainContent";
+import MainContent from "./mainContent";
 
 const Training = () => {
   const [activeSection, setActiveSection] = useState("CHAPTER-01");

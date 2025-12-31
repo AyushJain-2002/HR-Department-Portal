@@ -224,9 +224,9 @@ export default RenewalReport;
 
 //   },
 //   "file_paths": {
-//       "pancard_image": "customer/2025/4/8827079303/images/pancard_image_1744964566.jpg",
-//       "aadhar_front_card": "customer/2025/4/8827079303/images/aadhar_front_card_1744964566.jpg",
-//       "aadhar_back_card": "customer/2025/4/8827079303/images/aadhar_back_card_1744964566.png"
+//       "pancard_image": "customer/2025/4/8827079303/Images/pancard_image_1744964566.jpg",
+//       "aadhar_front_card": "customer/2025/4/8827079303/Images/aadhar_front_card_1744964566.jpg",
+//       "aadhar_back_card": "customer/2025/4/8827079303/Images/aadhar_back_card_1744964566.png"
 //   }
 // }
 

@@ -168,34 +168,37 @@ export function addFields(formData) {
             label: "Mobile",
             type: "text",
           },
+        ],
+      },
+      {
+        fields:[
           {
             name:"submit",
             label: "Submit",
             type:"button",
-            className:"w-48 mx-auto  col-span-full"
+            className:"w-48 m-4 mx-[42%]"
           }
-        ],
-      },
+        ]
+      }
     ],
   };
 };
 
-export function editFields (field,addFields,{ states = [],
-  cities = [],
-  zones = [],
-  region = [],
-  departments = [],
-  designations = [],
-  titles = [],
-  formData = {},}) {
-  // console.log(addFields)
-  // const [allFields]=(addFields.stepFields.filter((field)=>field.title=="Branch Details").map((field)=>field.fields))
-  const initialValue=field.branch_code
-  // console.log(allFields)
+export function editFields (formData) {
+    
+ const {states,cities,citiesBy,fetchStates} =useStateData();
+    const { departments,designations,fetchDepartments,  fetchDesignation} =useDepartment();
+    const{zones,region,fetchRegions,fetchZones}=useZones();
+    useEffect(() => {
+      if (!departments || departments.length === 0) (fetchDepartments());
+      if (!designations || designations.length === 0) (fetchDesignation());
+      if (!states || states.length === 0) (fetchStates());
+      if (!zones || zones.length === 0)(fetchZones());
+      if(!region || region.length === 0)(fetchRegions());
+    }, []);
   return {
     stepFields: [
       {
-        title:"Edit Branch",
         // className: "grid grid-cols-3 gap-4 w-full",
         className: "grid gap-4 md:grid-cols-3 sm:grid-row-1  md:justify-center",
           fields: [
@@ -235,9 +238,8 @@ export function editFields (field,addFields,{ states = [],
                         label: city.city_name,
                       })),
             storeLabel: true,
-            // disabled: false,
+            dependsOn:["state"],
             required: true,
-            dependsOn:["state"]
           },
           {
             name: "address",
@@ -272,7 +274,12 @@ export function editFields (field,addFields,{ states = [],
             name: "broker_pancard_number",
             label: "Broker Pancard Number",
             type: "text",
-          },
+          },{
+            name:"submit",
+            label: "Submit",
+            type:"button",
+            className:"w-48 mx-auto  col-span-full"
+          }
         ]
       }
     ],

@@ -22,7 +22,7 @@ const ROLES = {
   CLAIM: "Claim",
   MISP: "MISP",
   GROUP: "Group",
-  SUB_GROUP: "SubGroup",
+  SUB_GROUP: "Sub Group",
   POSP: "Posp"
 };
 

@@ -399,7 +399,7 @@ export default function PospDocument11config() {
                 {
                   label:
                     "Upload a clear image of the front side of your Aadhar Card.",
-                  sampleImage: "../../../../assets/images/Aadhar_PVC_Front.jpg",
+                  sampleImage: "../../../../assets/Images/Aadhar_PVC_Front.jpg",
                   step: 5,
                   // type: "file",
                 },
@@ -408,39 +408,39 @@ export default function PospDocument11config() {
                   step: 5,
                   type: "file",
                   sampleImage:
-                    "../../../../public/assets/images/Sample_PVC_Aadhar_Card_back.jpg",
+                    "../../../../public/assets/Images/Sample_PVC_Aadhar_Card_back.jpg",
                 },
                 {
                   label:
                     "Upload your Bank Passbook first page or a Cancelled Cheque.",
                   step: 5,
                   type: "file",
-                  sampleImage: "../../../../assets/images/Aadhar_PVC_Front.jpg",
+                  sampleImage: "../../../../assets/Images/Aadhar_PVC_Front.jpg",
                 },
                 {
                   label:
                     "Upload a recent Passport Size Photo with a clear background.",
                   step: 5,
                   type: "file",
-                  sampleImage: "../../../../assets/images/passport-size.webp",
+                  sampleImage: "../../../../assets/Images/passport-size.webp",
                 },
                 {
                   label: "Upload a clear image of your signature on white paper.",
                   step: 5,
                   type: "file",
-                  sampleImage: "../../../../assets/images/signature.png",
+                  sampleImage: "../../../../assets/Images/signature.png",
                 },
                 {
                   label: "Upload a clear image of your PAN Card.",
                   step: 5,
                   type: "file",
-                  sampleImage: "../../../../assets/images/pancard.webp",
+                  sampleImage: "../../../../assets/Images/pancard.webp",
                 },
                 {
                   label: "Upload your latest education Marksheet.",
                   step: 5,
                   type: "file",
-                  sampleImage: "../../../../assets/images/marksheet.jpg",
+                  sampleImage: "../../../../assets/Images/marksheet.jpg",
                 },
               ],
             },
@@ -534,7 +534,7 @@ export default function PospDocument11config() {
                     {
                       label:
                         "Upload a clear image of the front side of your Aadhar Card.",
-                      sampleImage: "../../../../assets/images/Aadhar_PVC_Front.jpg",
+                      sampleImage: "../../../../assets/Images/Aadhar_PVC_Front.jpg",
                       step: 5,
                       type: "file",
                     },
@@ -543,39 +543,39 @@ export default function PospDocument11config() {
                       step: 5,
                       type: "file",
                       sampleImage:
-                        "../../../../public/assets/images/Sample_PVC_Aadhar_Card_back.jpg",
+                        "../../../../public/assets/Images/Sample_PVC_Aadhar_Card_back.jpg",
                     },
                     {
                       label:
                         "Upload your Bank Passbook first page or a Cancelled Cheque.",
                       step: 5,
                       type: "file",
-                      sampleImage: "../../../../assets/images/cancelcheque.jfif",
+                      sampleImage: "../../../../assets/Images/cancelcheque.jfif",
                     },
                     {
                       label:
                         "Upload a recent Passport Size Photo with a clear background.",
                       step: 5,
                       type: "file",
-                      sampleImage: "../../../../assets/images/passport-size.webp",
+                      sampleImage: "../../../../assets/Images/passport-size.webp",
                     },
                     {
                       label: "Upload a clear image of your signature on white paper.",
                       step: 5,
                       type: "file",
-                      sampleImage: "../../../../assets/images/signature.png",
+                      sampleImage: "../../../../assets/Images/signature.png",
                     },
                     {
                       label: "Upload a clear image of your PAN Card.",
                       step: 5,
                       type: "file",
-                      sampleImage: "../../../../assets/images/pancard.webp",
+                      sampleImage: "../../../../assets/Images/pancard.webp",
                     },
                     {
                       label: "Upload your latest education Marksheet.",
                       step: 5,
                       type: "file",
-                      sampleImage: "../../../../assets/images/marksheet.jpg",
+                      sampleImage: "../../../../assets/Images/marksheet.jpg",
                     },
                   ],
                 },

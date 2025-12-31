@@ -40,7 +40,7 @@ const PospSignup = () => {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const navigate = useNavigate();
 
-  const logo = "/assets/images/logo.webp"; // Replace with your logo image path
+  const logo = "/assets/Images/logo.webp"; // Replace with your logo image path
   const headingText = "JOIN US AS A CERTIFIED POS";
   const [isAccepted, setIsAccepted] = useState(false); // State for checkbox
   const [errorMessage, setErrorMessage] = useState("");
@@ -235,7 +235,7 @@ if(user){
           preload="auto"
           playsInline
         >
-          <source src="/assets/images/video.mp4" type="video/mp4" />
+          <source src="/assets/Images/video.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       </div>

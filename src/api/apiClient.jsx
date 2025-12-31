@@ -1,10 +1,12 @@
+//src /api /apiClient.jsx
+
 import { HttpClient } from '../Utils/http-client.jsx';
 import AuthManager from './interceptors/auth.jsx';
 
 // Services (Singletons)
-import { AuthService} from './service/auth.service.jsx';
+import { AuthService} from './service/authService.jsx';
 import {EmployeeService} from "./service/employeeService.jsx";
-import { ErrorHandler } from '../utils/error-handler.jsx';
+import { ErrorHandler } from '../Utils/error-handler.jsx';
 import * as Types from './types/index.jsx';
 import { StateService } from './service/stateService.jsx';
 import { OperationService } from './service/operationService.jsx';

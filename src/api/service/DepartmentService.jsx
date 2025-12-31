@@ -2,7 +2,7 @@
 import {HttpClient} from '../../Utils/http-client.jsx';
 import { withRetry } from '../../Utils/retry.jsx';
 import ENDPOINTS from '../Endpoints.js';
-import { ErrorHandler } from '../../utils/error-handler.jsx';
+import { ErrorHandler } from '../../Utils/error-handler.jsx';
 import logger from '../Logger.js';
 
 export class DepartmentService {

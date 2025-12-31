@@ -54,7 +54,7 @@ export const PrivateRoute = ({ children, allowedRoles = [] }) => {
   const hasAccess = allowedRoles.some(role => userRoles.includes(role));
 
   if (!hasAccess) {
-    return <Navigate to="/unauthorized" state={{ from: location }} replace />;
+    return <Navigate to="/Unauthorized" state={{ from: location }} replace />;
   }
 
   return children;

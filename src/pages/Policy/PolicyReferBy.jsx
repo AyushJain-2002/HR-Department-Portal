@@ -1,3 +1,4 @@
+
 import {
   Card,
   Dialog,
@@ -8,58 +9,26 @@ import {
 import React, { useEffect, useMemo, useState } from "react";
 import Loading from "../Loading";
 import TableLayout from "../TableActions/TableLayout";
-// import ReusableTable from "../TableActions/ReusableTable"
 import { toast, ToastContainer } from "react-toastify";
-// import { fetchBanks } from "../../store/Actions/FuelAction";
 import {  useSelector } from "react-redux";
-// import {
-//   fetchRefBy,
-//   getRefByById,
-//   registerRefBy,
-//   togglePolicyRefStatus,
-//   updateRefBy,
-// } from "../../store/Actions/PolicyReferByActions";
 import { usePolicyReferBy } from "../../hooks/hookIndex";
 import { FaRegEdit } from "react-icons/fa";
-// import {
-//   fetchBqp,
-//   fetchRelationshipManager,
-//   fetchPosp,
-// } from "../../store/Actions/OperationAction";
 import Cookies from "js-cookie";
-// import { fetchBranches } from "../../store/Actions/BranchAction";
-// import { resetRefByByIdStart } from "../../store/Reducers/PolicyReferBySlice";
-// import {useOperation} from "../../hooks/useOperation";
-// import { useFuel } from "../../hooks/useFuel";
-// import { useBranch } from "../../hooks/useBranch";
 import Button from "../../components/ui/button/Button";
 import DynamicForm from "../Tables/DynamicForm";
 import ReferByConfig from "./ReferByConfig";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 const PolicyReferBy = () => {
   const [openModal, setOpenModal] = useState(false);
-  // const{ bqpList,bqpTypesSuccess,fetchBqp} = useOperation();
-  // const { bqpList, relationshipManagers, reportingManager, pospTypes } =
-  //   useSelector((state) => state.operationData);
-  // const dispatch = useDispatch();
-  // const { banks } = useSelector((state) => state.fuels);
-  // const { branches } = useSelector((state) => state.branches);
-  // const{ banks } =useFuel();
-  const {  fetchPolicyReferBy,getPolicyReferByById,registerPolicyReferBy,togglePolicyReferByStatus,updatePolicyReferBy,resetRefByByIdStart} =usePolicyReferBy();
+  const [showDialog, setShowDialog] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+  const [editFormErrors, setEditFormErrors] = useState({});
+  const {  fetchPolicyReferBy,getPolicyReferById,registerPolicyReferBy,togglePolicyReferByStatus,updatePolicyReferBy,policyRefList,
+    createError,error,editSuccess,editError,policyRef,createSuccess,} =usePolicyReferBy();
   const userBranchId = Cookies.get("branchId");
   const userRole = Cookies.get("role");
   const isRestrictedUser =
     userBranchId && !["admin", "Admin", "superadmin"].includes(userRole);
-  // const parsedBranchId = Number(userBranchId);
-  const {
-    policyRefList,
-    createError,
-    error,
-    editSuccess,
-    editError,
-    policyRef,
-    createSuccess,
-  } = useSelector((state) => state.policyReferBy);
   const [formData, setformData] = useState({
     title: "",
     bqp: "",
@@ -138,45 +107,21 @@ const PolicyReferBy = () => {
   const handleToggle = async (policyRefId) => {
     (togglePolicyReferByStatus(policyRefId)); // Call Redux action
   };
-  // useEffect(() => {
-  //   if (!bqpList?.length) (fetchBqp());
-  //   if (!banks || banks.length === 0) dispatch(fetchBanks());
-  //   if (!policyRefList || policyRefList.length === 0) dispatch(fetchRefBy());
-  //   if (!branches || branches.length === 0) dispatch(fetchBranches());
-  // }, [bqpTypesSuccess]);
   const handleSubmit = (formData) => {
-    // console.log("console = "+branchToEdit,branch)
-    // if (branchToEdit) {
-    //   // Edit operation
-    //   dispatch(updateBranch(branchToEdit, formData));
-    //   setBranchToEdit(null);
-    //   console.log(branchToEdit)
-    //   console.log(" for update");
-    // } else {
-    //   // Add operation
-    //   console.log("for create");
-    // }
     console.log(formData);
     (registerPolicyReferBy(formData));
     setOpenModal(false);
   };
-  const [showDialog, setShowDialog] = useState(false);
-  const [formErrors, setFormErrors] = useState({});
-  const [editFormErrors, setEditFormErrors] = useState({});
   const handleEdit = (pospId) => {
-    console.log("pospId for Edit:", pospId);
-    (getPolicyReferByById(pospId)); // Fetch the data for the selected ID
-    // setShowDialog(true);
+    (getPolicyReferById(pospId)); // Fetch the data for the selected ID
+ 
   };
   const handleUpdateReferBy = (formData) => {
-    console.log(formData);
     (updatePolicyReferBy(policyRef.id, formData));
-    // setShowDialog(false);
   };
   useEffect(() => {
     if (policyRef) {
       // Log the policyRef data and open the modal after the data is fetched
-      console.log("Fetched policyRef Data:", policyRef);
 
       setformData({
         title: policyRef.title || "", // Assuming title is part of policyRef
@@ -224,7 +169,7 @@ const PolicyReferBy = () => {
       setOpenModal(false);
       setFormErrors({});
       const timer = setTimeout(() => {
-        (resetRefByByIdStart());
+        // (resetRefByIdStart());
         setShowDialog(false);
       }, 2000);
       return () => clearTimeout(timer);
@@ -232,7 +177,7 @@ const PolicyReferBy = () => {
       toast.dismiss(); // 👈 dismiss existing toast
       toast.success("Policy ref By update successfully!");
       setShowDialog(false);
-      (resetRefByByIdStart());
+      // (resetRefByIdStart());
     }
   }, [createError, editError, createSuccess, editSuccess, error]);
   
@@ -246,16 +191,6 @@ const PolicyReferBy = () => {
       {/* </div> */}
       
       <Card className="mb-5 px-5 py-4 shadow-lg rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-        
-{/* 
-        <FormDynamic
-          fields={addFields}
-          onSubmit={handleSubmit}
-          success={createSuccess}
-          errors={formErrors}
-          initialValues={formData}
-          // onChange={handleFieldChange}
-        /> */}
         <DynamicForm
         config={ReferByConfig(formData)}
         onSubmit={handleSubmit}
@@ -279,35 +214,17 @@ const PolicyReferBy = () => {
         enableSearch={true}
         enableExcel={true}
       />
-      {/* <ReusableTable
-        tableData={flattenedMisps}
-        // handleDelete={handleDelete}
-        columnKeys={columnKeys}
-        fileName="Group"
-        idKey="id"
-        titlename="name"
-        handleToggle={handleToggle}
-        handleEditBranch={handleEdit}
-      /> */}
       <Dialog
         size="lg"
         open={showDialog}
         handler={() => {
           setShowDialog(false);
           // setEditFormErrors({});
-          (resetRefByByIdStart()); // or relevant reset/fetch action
+          // (resetRefByIdStart()); // or relevant reset/fetch action
         }}
       >
         <DialogHeader className="pb-0">Add Official Data To POSP</DialogHeader>
         <DialogBody className="pt-0">
-          {/* <FormDynamic
-            fields={addFields}
-            onSubmit={handleUpdateReferBy}
-            idKey="id"
-            initialValues={formData}
-            isEditMode={true}
-            errors={editFormErrors}
-          /> */}
           <DynamicForm
             config={ReferByConfig(formData)}
             onSubmit={handleUpdateReferBy}
@@ -319,7 +236,18 @@ const PolicyReferBy = () => {
         </DialogBody>
       </Dialog>
 
-      <ToastContainer />
+      <ToastContainer 
+      className="mt-16" // Add margin top to push toasts down from header
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"/>
     </div>
   );
 };
@@ -349,7 +277,7 @@ export default PolicyReferBy;
 // import { useDispatch, useSelector } from "react-redux";
 // import {
 //   fetchRefBy,
-//   getRefByById,
+//   getRefById,
 //   registerRefBy,
 //   togglePolicyRefStatus,
 //   updateRefBy,
@@ -361,7 +289,7 @@ export default PolicyReferBy;
 // } from "../../store/Actions/OperationAction";
 // import Cookies from "js-cookie";
 // import { fetchBranches } from "../../store/Actions/BranchAction";
-// import { resetRefByByIdStart } from "../../store/Reducers/PolicyReferBySlice";
+// import { resetRefByIdStart } from "../../store/Reducers/PolicyReferBySlice";
 
 // const PolicyReferBy = () => {
 //   const [openModal, setOpenModal] = useState(false);
@@ -660,7 +588,7 @@ export default PolicyReferBy;
 //   const [editFormErrors, setEditFormErrors] = useState({});
 //   const handleEdit = (pospId) => {
 //     console.log("pospId for Edit:", pospId);
-//     dispatch(getRefByById(pospId)); // Fetch the data for the selected ID
+//     dispatch(getRefById(pospId)); // Fetch the data for the selected ID
 //     // setShowDialog(true);
 //   };
 //   const handleUpdateReferBy = (formData) => {
@@ -719,7 +647,7 @@ export default PolicyReferBy;
 //       setOpenModal(false);
 //       setFormErrors({});
 //       const timer = setTimeout(() => {
-//         dispatch(resetRefByByIdStart());
+//         dispatch(resetRefByIdStart());
 //         setShowDialog(false);
 //       }, 2000);
 //       return () => clearTimeout(timer);
@@ -727,7 +655,7 @@ export default PolicyReferBy;
 //       toast.dismiss(); // 👈 dismiss existing toast
 //       toast.success("Policy ref By update successfully!");
 //       setShowDialog(false);
-//       dispatch(resetRefByByIdStart());
+//       dispatch(resetRefByIdStart());
 //     }
 //   }, [createError, editError, createSuccess, editSuccess, error, dispatch]);
   
@@ -764,7 +692,7 @@ export default PolicyReferBy;
 //         handler={() => {
 //           setShowDialog(false);
 //           // setEditFormErrors({});
-//           dispatch(resetRefByByIdStart()); // or relevant reset/fetch action
+//           dispatch(resetRefByIdStart()); // or relevant reset/fetch action
 //         }}
 //       >
 //         <DialogHeader className="pb-0">Add Official Data To POSP</DialogHeader>

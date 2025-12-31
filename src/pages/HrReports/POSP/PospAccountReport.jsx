@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Typography, Select, Option } from "@material-tailwind/react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { fetchAllPospData } from "../../../store/NewReducers/authSlice";
-import ReusableTable from "../../TableActions/ReusableTable";
 import { ToastContainer } from "react-toastify";
 import { useAuth } from "../../../hooks/useAuth";
 
@@ -65,14 +64,26 @@ const PospAccountReport = () => {
 
       <ReusableTable
         tableHeaders={columnKeys.map((col) => col.label)}
-        tableData={filteredData}
+        filteredData={filteredData}
         columnKeys={columnKeys}
         fileName="POSP Account Reports"
         idKey="id"
         loading={loading}
       />
 
-      <ToastContainer />
+      <ToastContainer 
+      className="mt-16" // Add margin top to push toasts down from header
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        />
     </div>
   );
 };

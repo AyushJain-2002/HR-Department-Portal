@@ -144,7 +144,7 @@ const Reset_Password = () => {
 
           <div className="text-center mb-6">
             <img
-              src="https://www.notioninsurance.in/assets/images/header/logo.webp"
+              src="https://www.notioninsurance.in/assets/Images/header/logo.webp"
               alt="Logo"
               className="h-20 mx-auto"
             />

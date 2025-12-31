@@ -1,3 +1,4 @@
+//src/api/Endpoints.js
 import { API_CONFIG } from './Api_Config';
 
 // Base URL with version
@@ -15,7 +16,7 @@ export const AUTH_ENDPOINTS = {
   // REFRESH_TOKEN: createEndpoint('/auth/refresh'),
   // FORGOT_PASSWORD: createEndpoint('/auth/forgot-password'),
   // RESET_PASSWORD: createEndpoint('/auth/reset-password'),
-  VERIFY_EMAIL: createEndpoint("/posp/resend-verification-email"),
+  VERIFY_EMAIL: createEndpoint("/Posp/resend-verification-email"),
   // VERIFY_OTP: createEndpoint('/auth/verify-otp'),
   // CHANGE_PASSWORD: createEndpoint('/auth/change-password'),
   // ME: createEndpoint('/auth/me'),
@@ -29,11 +30,6 @@ export const EMPLOYEE_ENDPOINTS = {
   UPDATE_EMPLOYEE: (id) => createEndpoint(`/employees/${id}`),
   // DELETE_EMPLOYEE: (id) => createEndpoint(`/users/${id}`),
   TOGGLE_EMPLOYEE: (id) => createEndpoint(`/employees/toggle/${id}`)
-  // UPDATE_PROFILE: createEndpoint('/users/profile'),
-  // UPLOAD_AVATAR: createEndpoint('/users/avatar'),
-  // GET_PREFERENCES: createEndpoint('/users/preferences'),
-  // UPDATE_PREFERENCES: createEndpoint('/users/preferences'),
-  // SEARCH_EMPLOYEES: createEndpoint('/users/search'),
 };
 
 export const STATES_ENDPOINTS= {
@@ -97,8 +93,8 @@ export const  BRANCHES= {
     DELETE_ADDON: (id) => createEndpoint(`/addons/${id}`),
   };
   export const CUSTOMERS= {
-    GET_ALL_CUSTOMERS: createEndpoint('/Customer/getAllCustomer'),
-    GET_CUSTOMER_BY_ID: (id) => createEndpoint(`/customer/${id}`),
+    GET_ALL_CUSTOMERS: createEndpoint('/customer/getAllCustomer'),
+    GET_CUSTOMER_BY_ID: (id) => createEndpoint(`/Customer/${id}`),
     CREATE_CUSTOMER: createEndpoint('/customers'),
     UPDATE_CUSTOMER: (id) => createEndpoint(`/customer/${id}`),
     TOGGLE_CUSTOMER_STATUS: (id) => createEndpoint(`/customer/toggle/${id}`),
@@ -157,7 +153,7 @@ export const  BRANCHES= {
 
   export const  MISP= {
     GET_MISPS: createEndpoint('/misp/index'),
-    GET_MISP_BY_ID: (id) => createEndpoint(`/misp/${id}`),
+    GET_MISP_BY_ID: (id) => createEndpoint(`/MISP/${id}`),
     CREATE_MISP: createEndpoint('/misp/register'),
     UPDATE_MISP: (id) => createEndpoint(`/misp/${id}`),
     DELETE_MISP: (id) => createEndpoint(`/misp/${id}`),
@@ -214,76 +210,8 @@ export const  BRANCHES= {
     FETCH_BRANCHES: createEndpoint('/employees/get/branch'),
     FETCH_BQP_BY_BRANCH: (branchId) => createEndpoint(`/employees/get/bqp/${branchId}`),
     FETCH_RELATIONSHIP_MANAGER_BY_BQP: (bqpId) => createEndpoint(`/employees/get/fetch_Relational_Manager/${bqpId}`),
-    SUBMIT_HR_VERIFICATION: (id) => createEndpoint(`/posp/hr/hrverification/${id}`),
+    SUBMIT_HR_VERIFICATION: (id) => createEndpoint(`/Posp/hr/hrverification/${id}`),
   }
-// // Product Endpoints
-// export const PRODUCT_ENDPOINTS = {
-//   GET_PRODUCTS: createEndpoint('/products'),
-//   GET_PRODUCT: (id) => createEndpoint(`/products/${id}`),
-//   CREATE_PRODUCT: createEndpoint('/products'),
-//   UPDATE_PRODUCT: (id) => createEndpoint(`/products/${id}`),
-//   DELETE_PRODUCT: (id) => createEndpoint(`/products/${id}`),
-//   SEARCH_PRODUCTS: createEndpoint('/products/search'),
-//   GET_CATEGORIES: createEndpoint('/products/categories'),
-//   GET_BRANDS: createEndpoint('/products/brands'),
-//   UPLOAD_IMAGE: createEndpoint('/products/upload'),
-//   GET_REVIEWS: (id) => createEndpoint(`/products/${id}/reviews`),
-//   ADD_REVIEW: (id) => createEndpoint(`/products/${id}/reviews`),
-// };
-
-// // Order Endpoints
-// export const ORDER_ENDPOINTS = {
-//   GET_ORDERS: createEndpoint('/orders'),
-//   GET_ORDER: (id) => createEndpoint(`/orders/${id}`),
-//   CREATE_ORDER: createEndpoint('/orders'),
-//   UPDATE_ORDER: (id) => createEndpoint(`/orders/${id}`),
-//   CANCEL_ORDER: (id) => createEndpoint(`/orders/${id}/cancel`),
-//   GET_ORDER_HISTORY: createEndpoint('/orders/history'),
-//   GET_INVOICE: (id) => createEndpoint(`/orders/${id}/invoice`),
-// };
-
-// // Payment Endpoints
-// export const PAYMENT_ENDPOINTS = {
-//   CREATE_PAYMENT: createEndpoint('/payments/create'),
-//   CONFIRM_PAYMENT: createEndpoint('/payments/confirm'),
-//   GET_PAYMENT_METHODS: createEndpoint('/payments/methods'),
-//   ADD_PAYMENT_METHOD: createEndpoint('/payments/methods'),
-//   DELETE_PAYMENT_METHOD: (id) => createEndpoint(`/payments/methods/${id}`),
-//   GET_TRANSACTIONS: createEndpoint('/payments/transactions'),
-// };
-
-// // File Endpoints
-// export const FILE_ENDPOINTS = {
-//   UPLOAD: createEndpoint('/files/upload'),
-//   DELETE: (id) => createEndpoint(`/files/${id}`),
-//   DOWNLOAD: (id) => createEndpoint(`/files/${id}/download`),
-//   GET_FILES: createEndpoint('/files'),
-// };
-
-// // Notification Endpoints
-// export const NOTIFICATION_ENDPOINTS = {
-//   GET_NOTIFICATIONS: createEndpoint('/notifications'),
-//   MARK_AS_READ: (id) => createEndpoint(`/notifications/${id}/read`),
-//   MARK_ALL_READ: createEndpoint('/notifications/read-all'),
-//   DELETE_NOTIFICATION: (id) => createEndpoint(`/notifications/${id}`),
-//   GET_UNREAD_COUNT: createEndpoint('/notifications/unread-count'),
-// };
-
-// // Analytics Endpoints
-// export const ANALYTICS_ENDPOINTS = {
-//   GET_DASHBOARD: createEndpoint('/analytics/dashboard'),
-//   GET_REPORTS: createEndpoint('/analytics/reports'),
-//   GET_METRICS: createEndpoint('/analytics/metrics'),
-//   EXPORT_DATA: createEndpoint('/analytics/export'),
-// };
-
-// // Settings Endpoints
-// export const SETTINGS_ENDPOINTS = {
-//   GET_SETTINGS: createEndpoint('/settings'),
-//   UPDATE_SETTINGS: createEndpoint('/settings'),
-//   GET_LOGS: createEndpoint('/settings/logs'),
-//   CLEAR_LOGS: createEndpoint('/settings/logs/clear'),
-// };
 
 // Export all endpoints
 export default {
@@ -310,45 +238,7 @@ export default {
   ASSIGN_OFFICIAL_POSP:ASSIGN_OFFICIAL_POSP,
   FUELS:FUELS,
   BRANCHES:BRANCHES,
-  // PRODUCT: PRODUCT_ENDPOINTS,
-  // ORDER: ORDER_ENDPOINTS,
-  // PAYMENT: PAYMENT_ENDPOINTS,
-  // FILE: FILE_ENDPOINTS,
-  // NOTIFICATION: NOTIFICATION_ENDPOINTS,
-  // ANALYTICS: ANALYTICS_ENDPOINTS,
-  // SETTINGS: SETTINGS_ENDPOINTS,
+
 };
 
 
-
-
-// export const API_CONFIG = {
-//   BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
-//   REQUEST_TIMEOUT: 30000,
-//   ENABLE_LOGGING: process.env.NODE_ENV === 'development',
-// };
-
-// export const ENDPOINTS = {
-//   AUTH: {
-//     LOGIN: '/login',
-//     LOGOUT: '/logout',
-//     FORGOT_PASSWORD: '/forgotPassword',
-//     RESET_PASSWORD: '/resetPassword',
-//   },
-//   POSP: {
-//     REGISTER: '/posp/register',
-//     RESEND_VERIFICATION: '/posp/resend-verification-email',
-//     UPDATE_DOCUMENTS: '/posp/update/documents',
-//     GET_POSP_BY_ID: '/posp/getPospDataByID',
-//     GET_TRAINING: '/posp/get_training',
-//     UPDATE_TRAINING: '/posp/updateTrainingHours',
-//     GET_EXAM_QUESTIONS: '/posp/getExamQuestion',
-//     SUBMIT_EXAM: '/posp/exam-responses',
-//     GET_ALL_POSP: '/posp/getAllPospData',
-//     HR_UPDATE_DOCUMENTS: '/posp/hr/update/documentsPosp',
-//     TOGGLE_ACTIVE: '/posp/hr/toggle-active',
-//     SEND_EMAIL: '/posp/hr/send_email_to_posp',
-//     TOGGLE_DOCS_VERIFICATION: '/posp/hr/toggle-Documents-verification',
-//     TOGGLE_UPDATE_DOCS: '/posp/hr/posp/toggle_can_update_documents',
-//   },
-// };

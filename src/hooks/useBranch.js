@@ -100,7 +100,7 @@ export const useBranch = () => {
     editError: branchState.editError,
     success: branchState.success,
     editSuccess: branchState.editSuccess,
-    
+    fetchSuccess:branchState.fetchSuccess,
     // Branch Manager Data
     branchManagers: branchState.branchManagers,
     currentBranchManager: branchState.branchManager,

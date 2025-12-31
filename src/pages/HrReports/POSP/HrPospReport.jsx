@@ -1,18 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
-// import Select from "react-select";
-import { useDispatch, useSelector } from "react-redux";
-// import {
-//   Card,
-//   Typography,
-//   Button,
-//   Dialog,
-//   DialogHeader,
-//   DialogBody,
-// } from "@material-tailwind/react";
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import {fetchAllPospData} from "../../../store/NewReducers/authSlice";
-import ReusableTable from "../../TableActions/ReusableTable";
 import { ToastContainer } from "react-toastify";
 import { useAuth } from "../../../hooks/useAuth";
+import TableLayout from "../../TableActions/TableLayout";
 
 
 
@@ -26,12 +17,6 @@ const HrPosp = () => {
   useEffect(() => {
     if (!allPosp || allPosp.length === 0) dispatch(fetchAllPospData()); // Fetch zones on component mount
   }, [dispatch]);
-
-
-
-
-
-
 
   const columnKeys = [
     { key: "sno", label: "S NO" },
@@ -75,31 +60,29 @@ const HrPosp = () => {
     
   ];
 
-
- 
-
- 
-
-
-
-
   return (
     <div className="md:py-8 py-3">
     
 
-    <ReusableTable
-        tableData={allPosp}
+    <TableLayout
+        filteredData={allPosp}
         columnKeys={columnKeys}
         fileName="User Data"
         idKey="id"
-       
         loading={loading}
       />
-
-   
-      
-
-      <ToastContainer />
+      <ToastContainer 
+      className="mt-16" // Add margin top to push toasts down from header
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"/>
     </div>
   );
 };

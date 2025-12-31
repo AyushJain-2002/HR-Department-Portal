@@ -11,7 +11,7 @@ const TableActionButtons = ({ tableData, tableColumns, fileName = "Data" }) => {
   
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
-    const logo = '/assets/images/logo.jpg'; // You should replace this with your actual logo file or base64 string.
+    const logo = '/assets/Images/logo.jpg'; // You should replace this with your actual logo file or base64 string.
     doc.addImage(logo, 'JPG', 14, 10, 50, 25); // Position and size of the logo
     
     doc.text(`Notion Insurance Broker ${fileName} Table`, 70, 20);

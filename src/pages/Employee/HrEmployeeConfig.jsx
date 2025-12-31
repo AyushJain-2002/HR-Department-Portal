@@ -1,36 +1,20 @@
 import  { useEffect } from "react";
 import { FaAddressBook, FaBriefcase, FaCloudUploadAlt, FaHome, FaPiggyBank } from "react-icons/fa";
-// import {  fetchStates } from "../../store/Actions/StateAction"
-import { useDispatch, useSelector } from "react-redux";
 import {useDepartment} from "../../hooks/useDepartment";
-// import { fetchBranches } from "../../store/Actions/BranchAction";
-// import { fetchBanks } from "../../store/Actions/FuelAction";
-// import { fetchBqp } from "../../store/Actions/OperationAction";
 import { RiProgress2Line } from "react-icons/ri";
 import Cookies from "js-cookie";
 import { useOperation } from "../../hooks/useOperation";
 import { useStateData } from "../../hooks/useStatesData";
 import {useBranch} from "../../hooks/useBranch"
 import { useFuel } from "../../hooks/useFuel";
-// import { branchSlice } from "../../../store/Reducers/BranchSlice";
-
-// Custom hook to supply config with Redux state
+import ROLES from "../../Utils/Routes/RolesConfig";
 export default function HrEmployeeConfig(formData) {
-  // const dispatch = useDispatch();
-  //  const { departments, designations } = useSelector(
-  //     (state) => state.departments
-  //   );
     const{ bqpList, relationshipManagers, reportingManager, pospTypes,fetchBqp }=useOperation();
     const {states,cities,citiesBy,fetchStates} =useStateData();
     const { departments,designations,fetchDepartments,  fetchDesignation} =useDepartment();
     const {branches,fetchBranches} = useBranch();
     const {banks,fetchBanks} = useFuel();
-      // const { bqpList, relationshipManagers, reportingManager, pospTypes } =
-      //   useSelector((state) => state.operationData);
-      const userBranchId  = Cookies.get("branchId");
-    
-    // const { branches } = useSelector((state) => state.branches);
-    // const { banks } = useSelector((state) => state.fuels);
+    const userBranchId  = Cookies.get("branchId");
     const userRole   = Cookies.get("role");
     const isRestrictedUser = userBranchId && !["admin","Admin", "superadmin"].includes(userRole);
     const parsedBranchId = Number(userBranchId); 
@@ -41,26 +25,9 @@ export default function HrEmployeeConfig(formData) {
       if (!states || states.length === 0) (fetchStates());
       if (!branches || branches.length === 0) (fetchBranches());
       if (!banks?.length) (fetchBanks());
-      // dispatch(fetchStates());
-      // Dispatch other needed actions similarly (if needed)
     }, []);
-    // console.log("states in config",states)
-    // console.log("designation in config",designations)
-  // console.log("data called", states)
-  // const {
-  //   states = [],
-  //   cities = { cities: [] },
-  //   citiesBy = { cities: [] }
-  // } = useSelector((state) => state.states);
-
-  // You can destructure other slices similarly
-  // const departments = useSelector(...);
-    // console.log(states)
   return {
-    // title: "HR Employee Form",
-    // validate: true,
     stepFields: [
-      // (your config object as before, referencing states/cities/deps from hooks)
             {
               title: "Personal Details",
               icon: FaHome,
@@ -165,10 +132,30 @@ export default function HrEmployeeConfig(formData) {
                   label: "Role",
                   type: "select",
                   options: [
-                    { value: "1", label: "HR" },
-                    { value: "2", label: "Admin" },
-                    { value: "3", label: "Operation" },
-                    { value: "4", label: "Marketing" },
+                    { value: ROLES.SUPER_ADMIN, label: "Super Admin" },
+                    { value: ROLES.ADMIN, label: "Admin" },
+                    { value: ROLES.HR_HEAD, label: "HR Head" },
+                    { value: ROLES.HR, label: "HR" },
+                    // { value: ROLES.OPERATION_HEAD, label: "Operation Head" },
+                    // { value: ROLES.SALES_SUPPORT_HEAD, label: "Sales Support Head" },
+                    // { value: ROLES.SALES_MARKETING_HEAD, label: "Sales & Marketing Head" },
+                    // { value: ROLES.ACCOUNTS_HEAD, label: "Accounts Head" },
+                    // { value: ROLES.RENEWALS_HEAD, label: "Renewals Head" },
+                    // { value: ROLES.IT_SUPPORT_HEAD, label: "IT Support Head" },
+                    // { value: ROLES.INVENTORY_HEAD, label: "Inventory Head" },
+                    // { value: ROLES.CLAIM_HEAD, label: "Claim Head" },
+                    // { value: ROLES.OPERATION, label: "Operation" },
+                    // { value: ROLES.SALES_SUPPORT, label: "Sales Support" },
+                    // { value: ROLES.SALES_MARKETING, label: "Sales & Marketing" },
+                    // { value: ROLES.ACCOUNTS, label: "Accounts" },
+                    // { value: ROLES.RENEWAL, label: "Renewal" },
+                    // { value: ROLES.IT_SUPPORT, label: "IT Support" },
+                    // { value: ROLES.INVENTORY, label: "Inventory" },
+                    // { value: ROLES.CLAIM, label: "Claim" },
+                    // { value: ROLES.MISP, label: "MISP" },
+                    // { value: ROLES.GROUP, label: "Group" },
+                    // { value: ROLES.SUB_GROUP, label: "Sub Group" },
+                    // { value: ROLES.POSP, label: "POSP" }
                   ],
                   storeLabel: true,
                   placeholder: "Select Role",
@@ -777,7 +764,7 @@ export default function HrEmployeeConfig(formData) {
                     {
                       label:
                         "Upload a clear image of the front side of your Aadhar Card.",
-                      sampleImage: "../../../../assets/images/Aadhar_PVC_Front.jpg",
+                      sampleImage: "../../../../assets/Images/Aadhar_PVC_Front.jpg",
                       step: 5,
                       type: "file",
                       accept: "image/jpeg,image/png,image/jpg", // Add this
@@ -790,7 +777,7 @@ export default function HrEmployeeConfig(formData) {
                       accept: "image/jpeg,image/png,image/jpg", // Add this
                       acceptTypes: ["image/jpeg", "image/png", "image/jpg"], // Add this
                       sampleImage:
-                        "../../../../public/assets/images/Sample_PVC_Aadhar_Card_back.jpg",
+                        "../../../../public/assets/Images/Sample_PVC_Aadhar_Card_back.jpg",
                     },
                     {
                       label:
@@ -799,7 +786,7 @@ export default function HrEmployeeConfig(formData) {
                       type: "file",
                       accept: "image/jpeg,image/png,image/jpg", // Add this
                       acceptTypes: ["image/jpeg", "image/png", "image/jpg"], // Add this
-                      sampleImage: "../../../../assets/images/cancelcheque.jfif",
+                      sampleImage: "../../../../assets/Images/cancelcheque.jfif",
                     },
                     {
                       label:
@@ -808,7 +795,7 @@ export default function HrEmployeeConfig(formData) {
                       type: "file",
                       accept: "image/jpeg,image/png,image/jpg", // Add this
                       acceptTypes: ["image/jpeg", "image/png", "image/jpg"], // Add this
-                      sampleImage: "../../../../assets/images/passport-size.webp",
+                      sampleImage: "../../../../assets/Images/passport-size.webp",
                     },
                     {
                       label: "Upload a clear image of your signature on white paper.",
@@ -816,7 +803,7 @@ export default function HrEmployeeConfig(formData) {
                       type: "file",
                       accept: "image/jpeg,image/png,image/jpg", // Add this
                       acceptTypes: ["image/jpeg", "image/png", "image/jpg"], // Add this
-                      sampleImage: "../../../../assets/images/signature.png",
+                      sampleImage: "../../../../assets/Images/signature.png",
                     },
                     {
                       label: "Upload a clear image of your PAN Card.",
@@ -824,7 +811,7 @@ export default function HrEmployeeConfig(formData) {
                       type: "file",
                       accept: "image/jpeg,image/png,image/jpg", // Add this
                       acceptTypes: ["image/jpeg", "image/png", "image/jpg"], // Add this
-                      sampleImage: "../../../../assets/images/pancard.webp",
+                      sampleImage: "../../../../assets/Images/pancard.webp",
                     },
                     {
                       label: "Upload your latest education Marksheet.",
@@ -832,7 +819,7 @@ export default function HrEmployeeConfig(formData) {
                       type: "file",
                       accept: "image/jpeg,image/png,image/jpg", // Add this
                       acceptTypes: ["image/jpeg", "image/png", "image/jpg"], // Add this
-                      sampleImage: "../../../../assets/images/marksheet.jpg",
+                      sampleImage: "../../../../assets/Images/marksheet.jpg",
                     },
                   ],
                 },

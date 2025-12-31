@@ -32,7 +32,7 @@ export const getDecryptedCookie = (key) => {
 
 
 
-// import { getDecryptedCookie } from "../utils/secureCookie";
+// import { getDecryptedCookie } from "../Utils/secureCookie";
 
 // const userInfo = getDecryptedCookie("userInfo");
 

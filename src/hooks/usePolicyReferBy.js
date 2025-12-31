@@ -3,10 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { 
   fetchPolicyReferBy,
   registerPolicyReferBy,
-  getPolicyReferByById,
+  getPolicyReferById,
   updatePolicyReferBy,
   togglePolicyReferByStatus,
-  resetPolicyReferByById,
+  resetPolicyReferById,
   clearError,
   resetPolicyReferBy
 } from "../store/NewReducers/PolicyReferBySlice";
@@ -15,7 +15,7 @@ import { useLogger } from "./useLogger";
 export const usePolicyReferBy = () => {
   const dispatch = useDispatch();
   const policyReferByState = useSelector((state) => state.policyReferBy);
-  console.log("policyReferbystate in hook",policyReferByState)
+  // console.log("policyReferbystate in hook",policyReferByState)
   const logger = useLogger("usePolicyReferBy");
 
   const handleFetchPolicyReferBy = () => {
@@ -31,9 +31,9 @@ export const usePolicyReferBy = () => {
     return dispatch(registerPolicyReferBy(data));
   };
 
-  const handleGetPolicyReferByById = (id) => {
+  const handleGetPolicyReferById = (id) => {
     logger.info("Get policy refer by by ID attempt", { referById: id });
-    return dispatch(getPolicyReferByById(id));
+    return dispatch(getPolicyReferById(id));
   };
 
   const handleUpdatePolicyReferBy = (id, data) => {
@@ -46,9 +46,9 @@ export const usePolicyReferBy = () => {
     return dispatch(togglePolicyReferByStatus(refById));
   };
 
-  const handleResetPolicyReferByById = () => {
+  const handleResetPolicyReferById = () => {
     logger.info("Reset policy refer by by ID state");
-    dispatch(resetPolicyReferByById());
+    dispatch(resetPolicyReferById());
   };
 
   const handleClearError = () => {
@@ -96,12 +96,12 @@ export const usePolicyReferBy = () => {
     // Actions
     fetchPolicyReferBy: handleFetchPolicyReferBy,
     registerPolicyReferBy: handleRegisterPolicyReferBy,
-    getPolicyReferByById: handleGetPolicyReferByById,
+    getPolicyReferById: handleGetPolicyReferById,
     updatePolicyReferBy: handleUpdatePolicyReferBy,
     togglePolicyReferByStatus: handleTogglePolicyReferByStatus,
     
     // Utility Actions
-    resetPolicyReferByById: handleResetPolicyReferByById,
+    resetPolicyReferById: handleResetPolicyReferById,
     clearError: handleClearError,
     resetPolicyReferBy: handleResetPolicyReferBy,
   };

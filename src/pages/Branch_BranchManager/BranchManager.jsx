@@ -1,38 +1,14 @@
 import {
-  Button,
   Card,
   Dialog,
   DialogBody,
-  DialogFooter,
   DialogHeader,
   Typography,
 } from "@material-tailwind/react";
 import { toast, ToastContainer } from "react-toastify";
 import FormDynamic from "../TableActions/FormDynamic";
-// import {
-//   fetchCities,fetchCitiesByState,fetchStates,
-// } from "../../store/Actions/StateAction";
 import { useEffect, useMemo, useState } from "react";
-// import { use, useSelector } from "react-redux";
-// import {
-//   createBranch,
-//   createBranchManager,
-//   deleteBranch,
-//   deleteBranchManager,
-//   fetchBranchById,
-//   fetchBranches,
-//   fetchBranchManagerById,
-//   fetchBranchManagers,
-//   updateBranch,
-//   updateBranchManager,
-// } from "../../store/Actions/BranchAction";
-// import { fetchRegions, fetchZones } from "../../store/Actions/ZoneAction";
-import Loading from "../Loading";
-import ReusableTable from "../TableActions/ReusableTable";
-// import {
-//   fetchDepartments,
-//   fetchDesignation,
-// } from "../../store/Actions/Department_Designation_Action";
+import TableLayout from "../TableActions/TableLayout";
 import { useParams } from "react-router-dom";
 import { useDepartment,useBranch,useStateData } from "../../hooks/hookIndex";
 
@@ -45,19 +21,6 @@ const BranchManager = () => {
   const { createBranch,createBranchManager,deleteBranch,deleteBranchManager,fetchBranchById,fetchBranches,
     fetchBranchManagerById,fetchBranchManagers,updateBranch,updateBranchManager,branch,editSuccess,branchManager,
     loading,success,error,createBranchManagerError,editBranchManagerError,}=useBranch()
-  // const {
-  //   branch,
-  //   editSuccess,
-  //   branchManager,
-  //   loading,
-  //   success,
-  //   error,
-  //   createBranchManagerError,
-  //   editBranchManagerError,
-  // } = useSelector((state) => state.branches);
-  // const { departments, designations } = useSelector(
-  //   (state) => state.departments
-  // );
   const {departments,designations,  fetchDepartments,fetchDesignation,}=useDepartment()
   const {  fetchCities,fetchCitiesByState,fetchStates}=useStateData();
   // Set default values for states and cities
@@ -103,8 +66,6 @@ const BranchManager = () => {
   };
   useEffect(() => {
     if (branchManager) {
-      // Log the branchManager data and open the modal after the data is fetched
-      // console.log("Fetched branchManager Data:", branchManager
       setFormState({
         branch_manager_name: branchManager.branch_manager_name,
         title: branchManager.title,
@@ -288,8 +249,8 @@ const BranchManager = () => {
         />
       </Card>
    
-        <ReusableTable
-          tableData={branch?.branch_managers || []}
+        <TableLayout
+          filteredData={branch?.branch_managers || []}
           handleDelete={handleDelete}
           columnKeys={columnKeys}
           fileName="Branch"
